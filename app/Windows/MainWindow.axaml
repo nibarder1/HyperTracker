@@ -1,0 +1,84 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="HyperTracker.Windows.MainWindow"
+        Title="HyperTracker">
+    <Grid RowDefinitions="0.5*, 9.5*">
+        <Rectangle x:Name="GLOBAL_BANNER" Grid.Row="0" Grid.Column="0" Stroke="Black" StrokeThickness="2">
+            <Rectangle.Fill>
+                <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                    <GradientStop Color="#0084ffff" Offset="0.0"/>
+                    <GradientStop Color="#000000" Offset="1.0"/>
+                </LinearGradientBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+        <StackPanel Orientation="Horizontal">
+            <Button Grid.Row="0" Grid.Column="0" Click="QuitApplication" Content="LOAD PROFILE" Width="150" Height="30" Margin="40,0,0,0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <Button Grid.Row="0" Grid.Column="0" Click="QuitApplication" Content="QUIT APPLICATION" Width="150" Height="30" Margin="10,0,0,0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </StackPanel>        
+        <TabControl Grid.Row="1" SelectionChanged="TabSelected">
+            <TabItem Header="LIVE FEED" Margin="5">
+                <Border x:Name="LIVE_BORDER" BorderBrush="Black" BorderThickness="2" Margin="5">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0%, 0%" EndPoint="0%, 110%">
+                            <GradientStop Color="#960000" Offset="0.0"/>
+                            <GradientStop Color="#000000" Offset="1.0"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <Grid RowDefinitions="1*, 0.1*" ColumnDefinitions="2*, 8*">
+                        <Canvas x:Name="CONTROL_CANVAS" Grid.Row="0" Grid.Column="0">                            
+                            <Button x:Name="START_BUTTON" Content="START" Width="150" Height="30" Canvas.Left="10" Canvas.Top="50" Click="LiveStartButton_Click"/>
+                            <Button x:Name="STOP_BUTTON" Content="STOP" Width="150" Height="30" Canvas.Left="10" Canvas.Top="100" Click="LiveStopButton_Click"/>
+                        </Canvas>
+                        <Canvas x:Name="LIVE_CANVAS" Grid.Row="0" Grid.Column="1">   
+                            
+                        </Canvas>
+                    </Grid>   
+                </Border> 
+            </TabItem>
+            <TabItem Header="ANALYSIS" Margin="5">
+                <Border x:Name="ANALYSIS_BORDER" BorderBrush="Black" BorderThickness="2" Margin="5">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0%, 0%" EndPoint="0%, 110%">
+                            <GradientStop Color="#0084ff" Offset="0.0"/>
+                            <GradientStop Color="#000000" Offset="1.0"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <Grid RowDefinitions="1*, 0.1*" ColumnDefinitions="2*, 8*">
+                        <Canvas x:Name="ANALYSIS_CONTROL_CANVAS" Grid.Row="0" Grid.Column="0">                            
+                            <Button x:Name="ANALYSIS_LOAD_RECORDING" Content="LOAD RECORDING" Width="150" Height="30" Canvas.Left="10" Canvas.Top="50" Click="AnalysisLoadRecordingButton_Click"/>
+                            <Button x:Name="ANALYSIS_NEXT_FRAME" Content="NEXT FRAME" Width="150" Height="30" Canvas.Left="10" Canvas.Top="100" Click="AnalysisNextFrameButton_Click"/>
+                            <Button x:Name="ANALYSIS__PREVIOUS_FRAME" Content="PREVIOUS FRAME" Width="150" Height="30" Canvas.Left="10" Canvas.Top="150" Click="AnalysisPreviousFrameButton_Click"/>
+                        </Canvas>
+                        <Canvas x:Name="ANALYSIS_CANVAS" Grid.Row="0" Grid.Column="1">                            
+                            
+
+                        </Canvas>
+                    </Grid> 
+                </Border> 
+            </TabItem>
+            <TabItem Header="CONFIGURATION" Margin="5">
+                <Border x:Name="CONFIGURATION_BORDER" BorderBrush="Black" BorderThickness="2" Margin="5">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0%, 0%" EndPoint="0%, 110%">
+                            <GradientStop Color="#0084ff" Offset="0.0"/>
+                            <GradientStop Color="#000000" Offset="1.0"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <Grid RowDefinitions="1*, 0.1*" ColumnDefinitions="2*, 8*">
+                        <Canvas x:Name="CONFIG_CONTROL_CANVAS" Grid.Row="0" Grid.Column="0">                            
+                            <Button x:Name="CONFIG_ADD_CAMERA" Content="ADD CAMERA" Width="150" Height="30" Canvas.Left="10" Canvas.Top="50" Click="ConfigAddCameraButton_Click"/>
+                            <Button x:Name="CONFIG_SAVE_CONFIG" Content="SAVE CONFIG" Width="150" Height="30" Canvas.Left="10" Canvas.Top="100" Click="ConfigSaveButton_Click"/>
+                        </Canvas>
+                        <Canvas x:Name="CONFIG_CANVAS" Grid.Row="0" Grid.Column="1">                            
+                            
+                        </Canvas>
+                    </Grid> 
+                </Border>                
+            </TabItem>
+        </TabControl>
+    </Grid>
+    
+</Window>
