@@ -12,6 +12,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia;
 using HyperTracker.Windows.UIBuilders;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 namespace HyperTracker.Datatypes;
 
 public class Camera : iInput
@@ -215,6 +216,8 @@ public class Camera : iInput
         }
         
     }
+
+    
 #endregion
 
 #region LIVE TAB
@@ -284,6 +287,7 @@ public class Camera : iInput
             if(canvas != null)
             {
                 var imgControl = Global.FindAvaloniaControl<Avalonia.Controls.Image>(Root, $"{this._parameters.GetParameter<string>("InputName")}_ANALYSIS_CAMERA");
+                var timestamp = Global.FindAvaloniaControl<TextBlock>(Root, $"{this._parameters.GetParameter<string>("InputName")}_ANALYSIS_TIMESTAMP");
                 if(imgControl != null && Global.RECORDING_FRAMES.Count > 0)
                 {
                     var img = Global.RECORDING_FRAMES[Global.CURRENT_FRAME_INDEX].GetImage(this._parameters.GetParameter<string>("InputName")!);
@@ -291,6 +295,12 @@ public class Camera : iInput
                     {
                         ImageBuilder.UpdateImage(imgControl, img);
                     }
+
+                    if(timestamp != null)
+                    {
+                        timestamp.Text = Global.RECORDING_FRAMES[Global.CURRENT_FRAME_INDEX].TimeStamp.ToString("MM/dd/yyyy hh:mm:ss.fff");
+                    }
+                    
                 }
             }
             
@@ -306,7 +316,10 @@ public class Camera : iInput
         Avalonia.Controls.Image camFeed = ImageBuilder.CreateImage(width, height, 0, 0, $"{this._parameters.GetParameter<string>("InputName")}_ANALYSIS_CAMERA"); 
         camFeed.PointerPressed += AnalysisCameraImage_Click;    
 
+        TextBlock timestamp = TextBlockBuilder.CreateTextBlock(width, height, 10, 10, $"{this._parameters.GetParameter<string>("InputName")}_ANALYSIS_TIMESTAMP", "");
+
         camCanvas.Children.Add(camFeed);
+        camCanvas.Children.Add(timestamp);
 
         return camCanvas;
     }

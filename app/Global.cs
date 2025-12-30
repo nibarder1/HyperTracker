@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.VisualTree;
+using HyperTracker.Config;
 using HyperTracker.Datatypes;
 using SixLabors.ImageSharp;
 namespace HyperTracker;
@@ -30,6 +31,10 @@ public class Global
     /// </summary>
     public static List<Frame> RECORDING_FRAMES = new List<Frame>();
 
+    public static List<Settings> PROFILE_SETTINGS = new List<Settings>();
+
+    public static int LOADED_PROFILE = 0;
+
     public static int CURRENT_FRAME_INDEX  = 0;
     /// <summary>
     /// Get Avalonia control by name.
@@ -43,5 +48,13 @@ public class Global
         return root.GetVisualDescendants().OfType<T>().FirstOrDefault(c => c.Name == name);
     }
 
-    
+    public static void LoadSettings()
+    {
+        
+    }   
+
+    public static void SaveSettings()
+    {
+        
+    } 
 }

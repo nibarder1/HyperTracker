@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using HyperTracker.Datatypes;
@@ -99,6 +100,20 @@ public partial class MainWindow : Window
     {       
         Global.CURRENT_FRAME_INDEX = (Global.CURRENT_FRAME_INDEX - 1) % Global.RECORDING_FRAMES.Count;
     }
+
+    public void AnalysisFrameSlider_Changed(object sender, RoutedEventArgs args)
+    {       
+        if(Global.RECORDING_FRAMES.Count == 0)
+        {
+            return;
+        }
+        var slider = sender as Avalonia.Controls.Slider;
+        if(slider != null)
+        {
+            int index = (int)slider.Value;
+            Global.CURRENT_FRAME_INDEX = index;
+        }
+    }
 #endregion
 
 #region CONFIGURATION CONTROLS
@@ -159,10 +174,29 @@ public partial class MainWindow : Window
                     if(Global.CURRENT_TAB == 0)
                     {
                         i.UpdateLiveControl(LIVE_CANVAS);
+                        Dispatcher.UIThread.Invoke(() =>
+                        {
+                            if(Global.IS_RECORDING)
+                            {
+                                
+                                LIVE_BORDER.BorderBrush = CreateGradient(new Color(255, 0, 150, 0), new Color(255, 0, 0, 0));
+                                LIVE_BORDER.Background = CreateGradient(new Color(255, 0, 150, 0), new Color(255, 0, 0, 0));
+                            }else
+                            {
+                                LIVE_BORDER.BorderBrush = CreateGradient(new Color(255, 150, 0, 0), new Color(255, 0, 0, 0));
+                                LIVE_BORDER.Background = CreateGradient(new Color(255, 150, 0, 0), new Color(255, 0, 0, 0));
+                            }
+                            
+                        });
                     }
                     if(Global.CURRENT_TAB == 1)
                     {
                         i.UpdateAnalysisControl(ANALYSIS_CANVAS);
+                        Dispatcher.UIThread.Invoke(() =>
+                        {
+                            ANALYSIS_FRAME_SLIDER.Maximum = Global.RECORDING_FRAMES.Count - 1;
+                        });
+                        
                     }
                     if(Global.CURRENT_TAB == 2)
                     {
@@ -268,5 +302,17 @@ public partial class MainWindow : Window
             }catch{}
             
         });
+    }
+
+    public LinearGradientBrush CreateGradient(Color startColor, Color endColor)
+    {
+        LinearGradientBrush gradientBrush = new LinearGradientBrush();
+        gradientBrush.StartPoint = new Avalonia.RelativePoint(0,0, Avalonia.RelativeUnit.Relative);
+        gradientBrush.EndPoint = new Avalonia.RelativePoint(0,1, Avalonia.RelativeUnit.Relative);
+
+        gradientBrush.GradientStops.Add(new GradientStop(startColor, 0.0));
+        gradientBrush.GradientStops.Add(new GradientStop(endColor, 1));
+
+        return gradientBrush;
     }
 }

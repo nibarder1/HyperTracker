@@ -23,12 +23,12 @@
                 <Border x:Name="LIVE_BORDER" BorderBrush="Black" BorderThickness="2" Margin="5">
                     <Border.Background>
                         <LinearGradientBrush StartPoint="0%, 0%" EndPoint="0%, 110%">
-                            <GradientStop Color="#960000" Offset="0.0"/>
+                            <GradientStop Color="rgba(150, 0, 0, 1)" Offset="0.0"/>
                             <GradientStop Color="#000000" Offset="1.0"/>
                         </LinearGradientBrush>
                     </Border.Background>
                     <Grid RowDefinitions="1*, 0.1*" ColumnDefinitions="2*, 8*">
-                        <Canvas x:Name="CONTROL_CANVAS" Grid.Row="0" Grid.Column="0">                            
+                        <Canvas x:Name="CONTROL_CANVAS" Grid.Row="0" Grid.Column="0" Background="Black">                            
                             <Button x:Name="START_BUTTON" Content="START" Width="150" Height="30" Canvas.Left="10" Canvas.Top="50" Click="LiveStartButton_Click"/>
                             <Button x:Name="STOP_BUTTON" Content="STOP" Width="150" Height="30" Canvas.Left="10" Canvas.Top="100" Click="LiveStopButton_Click"/>
                         </Canvas>
@@ -42,15 +42,16 @@
                 <Border x:Name="ANALYSIS_BORDER" BorderBrush="Black" BorderThickness="2" Margin="5">
                     <Border.Background>
                         <LinearGradientBrush StartPoint="0%, 0%" EndPoint="0%, 110%">
-                            <GradientStop Color="#0084ff" Offset="0.0"/>
+                            <GradientStop Color="#ffee00" Offset="0.0"/>
                             <GradientStop Color="#000000" Offset="1.0"/>
                         </LinearGradientBrush>
                     </Border.Background>
                     <Grid RowDefinitions="1*, 0.1*" ColumnDefinitions="2*, 8*">
-                        <Canvas x:Name="ANALYSIS_CONTROL_CANVAS" Grid.Row="0" Grid.Column="0">                            
+                        <Canvas x:Name="ANALYSIS_CONTROL_CANVAS" Grid.Row="0" Grid.Column="0" Background="Black">                            
                             <Button x:Name="ANALYSIS_LOAD_RECORDING" Content="LOAD RECORDING" Width="150" Height="30" Canvas.Left="10" Canvas.Top="50" Click="AnalysisLoadRecordingButton_Click"/>
                             <Button x:Name="ANALYSIS_NEXT_FRAME" Content="NEXT FRAME" Width="150" Height="30" Canvas.Left="10" Canvas.Top="100" Click="AnalysisNextFrameButton_Click"/>
-                            <Button x:Name="ANALYSIS__PREVIOUS_FRAME" Content="PREVIOUS FRAME" Width="150" Height="30" Canvas.Left="10" Canvas.Top="150" Click="AnalysisPreviousFrameButton_Click"/>
+                            <Button x:Name="ANALYSIS_PREVIOUS_FRAME" Content="PREVIOUS FRAME" Width="150" Height="30" Canvas.Left="10" Canvas.Top="150" Click="AnalysisPreviousFrameButton_Click"/>
+                            <Slider x:Name="ANALYSIS_FRAME_SLIDER" Width="150" Height="50" Canvas.Left="10" Canvas.Top="180" Minimum="0" Maximum="100" ValueChanged="AnalysisFrameSlider_Changed"/>
                         </Canvas>
                         <Canvas x:Name="ANALYSIS_CANVAS" Grid.Row="0" Grid.Column="1">                            
                             
