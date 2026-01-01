@@ -36,7 +36,7 @@ public class CaptureThread
                     Global.RECORDING_FRAMES.RemoveAt(0);
                 }
             }
-            Thread.Sleep(10);
+            Thread.Sleep(Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].TargetCycleMs);
         }
     }
 }

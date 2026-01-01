@@ -15,7 +15,7 @@
             </Rectangle.Fill>
         </Rectangle>
         <StackPanel Orientation="Horizontal">
-            <Button Grid.Row="0" Grid.Column="0" Click="QuitApplication" Content="LOAD PROFILE" Width="150" Height="30" Margin="40,0,0,0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <ComboBox x:Name="PROFILE_COMBOBOX" Grid.Row="0" Grid.Column="0" Width="200" Height="30" Margin="10,0,0,0" HorizontalAlignment="Center" VerticalAlignment="Center" SelectionChanged="ProfileComboBox_SelectionChanged"/>
             <Button Grid.Row="0" Grid.Column="0" Click="QuitApplication" Content="QUIT APPLICATION" Width="150" Height="30" Margin="10,0,0,0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
         </StackPanel>        
         <TabControl Grid.Row="1" SelectionChanged="TabSelected">
@@ -28,7 +28,8 @@
                         </LinearGradientBrush>
                     </Border.Background>
                     <Grid RowDefinitions="1*, 0.1*" ColumnDefinitions="2*, 8*">
-                        <Canvas x:Name="CONTROL_CANVAS" Grid.Row="0" Grid.Column="0" Background="Black">                            
+                        <Canvas x:Name="CONTROL_CANVAS" Grid.Row="0" Grid.Column="0" Background="Black">    
+                            <TextBlock x:Name="LIVE_STATUS_TEXT" Text="STATUS: IDLE" Foreground="White" FontSize="16" Canvas.Left="10" Canvas.Top="10"/>                        
                             <Button x:Name="START_BUTTON" Content="START" Width="150" Height="30" Canvas.Left="10" Canvas.Top="50" Click="LiveStartButton_Click"/>
                             <Button x:Name="STOP_BUTTON" Content="STOP" Width="150" Height="30" Canvas.Left="10" Canvas.Top="100" Click="LiveStopButton_Click"/>
                         </Canvas>

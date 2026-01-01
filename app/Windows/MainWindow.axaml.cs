@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,52 +16,21 @@ namespace HyperTracker.Windows;
 
 public partial class MainWindow : Window
 {
+    /// <summary>
+    /// UI processing thread.
+    /// </summary>
     private Thread _updateUIThread;
+    /// <summary>
+    /// Thread to capture frames.
+    /// </summary>
     private Thread _captureThread;
-    private bool _rebuildWindow = true;
     /// <summary>
     /// Initialize main Avalonia window.
     /// </summary>
     public MainWindow()
     {
-        InputParameters ip = new InputParameters();
-        ip.AddParam("CameraIndex", 0);
-        ip.AddParam("CameraWidth", 1280);
-        ip.AddParam("CameraHeight", 720);
-        ip.AddParam("CameraFPS", 120);
-        ip.AddParam("IsStereo", false);
-        ip.AddParam("IsEnabled", true);
-        ip.AddParam("InputName", "test");
-        Camera cam = new Camera(ip);
-        cam.Initialize();
-        if(cam.IsInitialized())
-        {
-            Console.WriteLine("Camera starting");
-            Task.Run(cam.Start);
-            Console.WriteLine("Camera started");
-        }
-
-        InputParameters ip2 = new InputParameters();
-        ip2.AddParam("CameraIndex", 1);
-        ip2.AddParam("CameraWidth", 1280);
-        ip2.AddParam("CameraHeight", 720);
-        ip2.AddParam("CameraFPS", 120);
-        ip2.AddParam("IsStereo", false);
-        ip2.AddParam("IsEnabled", true);
-        ip2.AddParam("InputName", "test2");
-        Camera cam2 = new Camera(ip2);
-        cam2.Initialize();
-        if(cam2.IsInitialized())
-        {
-            Console.WriteLine("Camera starting");
-            Task.Run(cam2.Start);
-            Console.WriteLine("Camera started");
-        }
-
-
-
-        Global.APPLICATION_INPUTS.Add(cam);
-        Global.APPLICATION_INPUTS.Add(cam2);
+        Global.LoadSettings();
+        Global.LoadProfile(0);
         InitializeComponent();
         this.WindowState = WindowState.FullScreen;
         _updateUIThread = new Thread(UpdateUI);
@@ -69,15 +39,37 @@ public partial class MainWindow : Window
         _captureThread.Start();
     }
 
+    public void ProfileComboBox_SelectionChanged(object sender, RoutedEventArgs args)
+    {
+        var box = sender as ComboBox;
+        if(box != null)
+        {
+            
+            int selected = box.SelectedIndex;
+            Console.WriteLine($"Changine Profiles: {selected}");
+            try
+            {
+                Global.LoadProfile(selected);
+            }
+            catch
+            {
+                
+            }
+            
+        }
+    }
+
 #region LIVE CONTROLS
     public void LiveStartButton_Click(object sender, RoutedEventArgs args)
     {       
         Global.RECORDING_FRAMES.Clear();
         Global.IS_RECORDING = true;
+        LIVE_STATUS_TEXT.Text = "STATUS: RECORDING";
     }
     public void LiveStopButton_Click(object sender, RoutedEventArgs args)
     {       
         Global.IS_RECORDING = false;
+        LIVE_STATUS_TEXT.Text = "STATUS: IDLE";
     }
 #endregion
 
@@ -144,16 +136,26 @@ public partial class MainWindow : Window
     public void TabSelected(object sender, SelectionChangedEventArgs e)
     {
         Handlers.TabHandler.ChangeTab(sender, e);
-        this._rebuildWindow = true;
+        Global.REBUILD_UI = true;
     }
 
     public void UpdateUI()
     {
+        Dispatcher.UIThread.Invoke(() =>
+        {
+            List<string> items = new List<string>();
+            foreach(var profile in Global.PROFILE_SETTINGS)
+            {
+                items.Add(profile.ProfileName);
+            }
+            PROFILE_COMBOBOX.ItemsSource = items;
+            PROFILE_COMBOBOX.SelectedIndex = 0;
+        });
         while(true)
         {
             if(Global.APPLICATION_INPUTS.Count > 0)
             {
-                if(this._rebuildWindow)
+                if(Global.REBUILD_UI)
                 {
                     if(Global.CURRENT_TAB == 0)
                     {
@@ -167,7 +169,8 @@ public partial class MainWindow : Window
                     {
                         BuildConfigurationCanvas();
                     }
-                    this._rebuildWindow = false;
+                    
+                    Global.REBUILD_UI = false;
                 }
                 foreach(iInput i in Global.APPLICATION_INPUTS)
                 {

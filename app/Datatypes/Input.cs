@@ -83,5 +83,5 @@ public interface iInput
     public Control UpdateAnalysisControl(Avalonia.Controls.Control Root);    
     public Control BuildConfigControl(int width, int height, int rootX, int rootY);
     public Control UpdateConfigControl(Control Root);
-    
+    public void Release();
 }

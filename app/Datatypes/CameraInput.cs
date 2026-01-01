@@ -81,6 +81,14 @@ public class Camera : iInput
         return this._initialized;
     }
 
+    public void Release()
+    {
+        if(this._device != null && this._device.IsRunning)
+        {
+            this._device.Dispose();
+        }
+    }
+
     public bool ReinitializeInput()
     {
         if(this._deviceDescriptor == null)
@@ -225,12 +233,19 @@ public class Camera : iInput
     {
         Canvas camCanvas = CanvasBuilder.CreateCanvas(width, height, rootX, rootY, $"{this._parameters.GetParameter<string>("InputName")}_CANVAS");
 
-        TextBlock fpsText = TextBlockBuilder.CreateTextBlock(width, height, 10, 10, $"{this._parameters.GetParameter<string>("InputName")}_FPS_TEXT", $"FRAME RATE: {this.FRAME_RATE}");
+        TextBlock nameText = TextBlockBuilder.CreateTextBlock(100, 50, 10, 10, $"{this._parameters.GetParameter<string>("InputName")}_NAME_TEXT", $"CAMERA: {this._parameters.GetParameter<string>("InputName")!.ToUpper()}");
+
+        TextBlock fpsText = TextBlockBuilder.CreateTextBlock(100, 50, 10, 40, $"{this._parameters.GetParameter<string>("InputName")}_FPS_TEXT", $"FRAME RATE: {this.FRAME_RATE}");
+
+        TextBlock calibrateText = TextBlockBuilder.CreateTextBlock(100, 50, 10, height - 30, $"{this._parameters.GetParameter<string>("InputName")}_CALIBRATE_TEXT", $"CLICK IMAGE TO OPEN CALIBRATION WINDOW");
         
         Image camFeed = ImageBuilder.CreateImage(width, height, 0, 0, $"{this._parameters.GetParameter<string>("InputName")}_CAMERA");  
+        camFeed.PointerPressed += LiveCameraImage_Click;  
 
         camCanvas.Children.Add(camFeed);
+        camCanvas.Children.Add(nameText);
         camCanvas.Children.Add(fpsText);
+        camCanvas.Children.Add(calibrateText);
 
         return camCanvas;
     }
@@ -259,6 +274,24 @@ public class Camera : iInput
 
         return Root;
     }
+
+    private void LiveCameraImage_Click(object? sender, PointerPressedEventArgs args)
+    {       
+        if(((IClassicDesktopStyleApplicationLifetime)Application.Current!.ApplicationLifetime!).Windows.Count == 1)
+        {
+            var window = new CameraPopup(this);
+            window.Width = 1280;
+            window.Height = 820;
+            window.Show();
+            window.Position = new PixelPoint(10, 10);
+            window.ShowCalibrationPanel();
+            window.Closing += (object? sender, WindowClosingEventArgs e) =>
+            {
+                this._currentPopup = null;
+            };
+            this._currentPopup = window;
+        }  
+    }
 #endregion
 
 #region  ANALYSIS TAB
@@ -267,9 +300,10 @@ public class Camera : iInput
         if(((IClassicDesktopStyleApplicationLifetime)Application.Current!.ApplicationLifetime!).Windows.Count == 1)
         {
             var window = new CameraPopup(this);
-            window.Width = 1200;
-            window.Height = 800;
+            window.Width = 1280;
+            window.Height = 920;
             window.Show();
+            window.Position = new PixelPoint(10, 10);
             window.ShowAnalysisPanel();
             window.Closing += (object? sender, WindowClosingEventArgs e) =>
             {
@@ -331,9 +365,10 @@ public class Camera : iInput
         if(((IClassicDesktopStyleApplicationLifetime)Application.Current!.ApplicationLifetime!).Windows.Count == 1)
         {
             var window = new CameraPopup(this);
-            window.Width = 1200;
-            window.Height = 800;
+            window.Width = 1280;
+            window.Height = 920;
             window.Show();
+            window.Position = new PixelPoint(10, 10);
             window.ShowConfigPanel();
             window.Closing += (object? sender, WindowClosingEventArgs e) =>
             {
