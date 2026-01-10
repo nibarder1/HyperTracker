@@ -61,7 +61,7 @@
                     </Grid> 
                 </Border> 
             </TabItem>
-            <TabItem Header="CONFIGURATION" Margin="5">
+            <TabItem Header="CONFIGURATION" Margin="5" IsVisible="False">
                 <Border x:Name="CONFIGURATION_BORDER" BorderBrush="Black" BorderThickness="2" Margin="5">
                     <Border.Background>
                         <LinearGradientBrush StartPoint="0%, 0%" EndPoint="0%, 110%">
