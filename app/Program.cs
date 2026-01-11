@@ -1,16 +1,26 @@
 ﻿using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
+using HyperTracker.Windows;
 using System;
+using System.Threading;
 
 namespace HyperTracker;
 
 class Program
 {
-    // Initialization code. Don't use any Avalonia, third-party APIs or any
-    // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
-    // yet and stuff might break.
-    [STAThread]
-    public static void Main(string[] args) => BuildAvaloniaApp()
-        .StartWithClassicDesktopLifetime(args);
+    static Thread? _processThread = null;
+
+    public static void Main(string[] args)
+    {
+        Global.LoadSettings();
+        Global.LoadProfile(0);
+
+        _processThread = new Thread(Threads.CaptureThread.ThreadLoop);
+        _processThread.Start();
+
+        BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+    }
+
 
     // Avalonia configuration, don't remove; also used by visual designer.
     public static AppBuilder BuildAvaloniaApp()

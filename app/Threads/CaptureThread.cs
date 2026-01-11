@@ -15,17 +15,17 @@ public class CaptureThread
             if(Global.IS_RECORDING)
             {
                 Frame frame = new Frame(DateTime.Now);
-                foreach(iInput i in Global.APPLICATION_INPUTS)
+                foreach(iModule i in Global.APPLICATION_INPUTS)
                 {
                     if(i.GetInputType() == InputTypes.CAMERA)
                     {
-                        Camera? c = i as Camera;
+                        CameraModule? c = i as CameraModule;
                         if(c != null)
                         {
                             Image? img = c.GetScan();
                             if(img != null)
                             {
-                                frame.AddImageToFrame(img, c.GetParams().GetParameter<string>("InputName")!);
+                                frame.AddImageToFrame(img, c.GetParams()!.GetParameter<string>("InputName")!);
                             }                            
                         }
                     }

@@ -17,13 +17,13 @@ namespace HyperTracker.Windows;
 
 public partial class CameraPopup : Window
 {
-    private Camera _cam;
+    private CameraModule _cam;
     private int cameraSettingIndex = -1;
     private double measurePoint = -1;
-    public CameraPopup(Camera cam)
+    public CameraPopup(CameraModule cam)
     {
         this._cam = cam;
-        this.Title = $"{this._cam.GetParams().GetParameter<string>("InputName")} Configuration";
+        this.Title = $"{this._cam.GetParams()!.GetParameter<string>("InputName")} Configuration";
         this.Topmost= true;
         InitializeComponent();
     }
@@ -33,18 +33,18 @@ public partial class CameraPopup : Window
         for(int i = 0; i < Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras.Count; i++)
         {
             CameraSettings camSettings = Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras[i];
-            if(camSettings.CameraName.Equals(this._cam.GetParams().GetParameter<string>("InputName")))
+            if(camSettings.CameraName.Equals(this._cam.GetParams()!.GetParameter<string>("InputName")))
             {
                 this.cameraSettingIndex = i;
                 break;
             }
         }
-        this.Title = $"{this._cam.GetParams().GetParameter<string>("InputName")} Analysis";
+        this.Title = $"{this._cam.GetParams()!.GetParameter<string>("InputName")} Analysis";
         TextBlock textBlock = TextBlockBuilder.CreateTextBlock(200, 50, 10, 10, "ANALYSIS_DISTANCE", "DISTANCE MM: ");
         TextBlock helpBlock = TextBlockBuilder.CreateTextBlock(200, 50, 10, 100, "MEASURE_HELP", "CLICK ON IMAGE TO MEASURE");
         Avalonia.Controls.Image img = ImageBuilder.CreateImage(1280, 720, 0, 100, "CAMERA_FEED");
         
-        SixLabors.ImageSharp.Image? frameImage = Global.RECORDING_FRAMES[Global.CURRENT_FRAME_INDEX].GetImage(this._cam.GetParams().GetParameter<string>("InputName")!);
+        SixLabors.ImageSharp.Image? frameImage = Global.RECORDING_FRAMES[Global.CURRENT_FRAME_INDEX].GetImage(this._cam.GetParams()!.GetParameter<string>("InputName")!);
         if(frameImage != null)
         {
             ImageBuilder.UpdateImage(img, frameImage);
@@ -63,13 +63,13 @@ public partial class CameraPopup : Window
         for(int i = 0; i < Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras.Count; i++)
         {
             CameraSettings camSettings = Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras[i];
-            if(camSettings.CameraName.Equals(this._cam.GetParams().GetParameter<string>("InputName")))
+            if(camSettings.CameraName.Equals(this._cam.GetParams()!.GetParameter<string>("InputName")))
             {
                 this.cameraSettingIndex = i;
                 break;
             }
         }
-        this.Title = $"{this._cam.GetParams().GetParameter<string>("InputName")} Configuration";
+        this.Title = $"{this._cam.GetParams()!.GetParameter<string>("InputName")} Configuration";
         TextBlock cameraNameLabel = TextBlockBuilder.CreateTextBlock(100,50, 10, 25, "CAMERA_NAME_LABEL", "NAME");
         TextBox cameraNameInput = TextBoxBuilder.CreateTextBox(200, 50, 10, 50, $"CAMERA_NAME", false);
         cameraNameInput.TextChanged += nameInput_Changed;
@@ -119,13 +119,13 @@ public partial class CameraPopup : Window
         for(int i = 0; i < Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras.Count; i++)
         {
             CameraSettings camSettings = Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras[i];
-            if(camSettings.CameraName.Equals(this._cam.GetParams().GetParameter<string>("InputName")))
+            if(camSettings.CameraName.Equals(this._cam.GetParams()!.GetParameter<string>("InputName")))
             {
                 this.cameraSettingIndex = i;
                 break;
             }
         }
-        this.Title = $"{this._cam.GetParams().GetParameter<string>("InputName")} Calibration";
+        this.Title = $"{this._cam.GetParams()!.GetParameter<string>("InputName")} Calibration";
         TextBlock baseLineText = TextBlockBuilder.CreateTextBlock(100, 50, 10, 10, "MEASURE_BASE_LINE_TEXT", "BASE LINE %");
         NumericUpDown baseLine = NumberInputBuilder.CreateNumberInput(200, 50, 10, 40, "MEASURE_BASE_LINE");
         baseLine.Value = (decimal)Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras[cameraSettingIndex].MEASURE_FLOOR_POSITION;
@@ -185,44 +185,89 @@ public partial class CameraPopup : Window
             SixLabors.ImageSharp.Image? scan = this._cam.GetScan();
             if(scan != null)
             {
-                float baseY = (float)Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras[cameraSettingIndex].MEASURE_FLOOR_POSITION / 100 * scan.Height;
-                PointF baseStart = new PointF(0, baseY);
-                PointF baseEnd = new PointF(scan.Width, baseY);
-                var basePoints = new PointF[]
+                if(Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].TrackingMode == TrackMode.VERTICLE_DISTANCE)
                 {
-                  baseStart,
-                  baseEnd  
-                };
-                
-                float calibrateY = (float)Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras[cameraSettingIndex].CALIBRATION_LINE_POSITION / 100 * scan.Height;
-                PointF calibrateStart = new PointF(0, calibrateY);
-                PointF calibrateEnd = new PointF(scan.Width, calibrateY);
-                var calibratePoints = new PointF[]
-                {
-                    calibrateStart,
-                    calibrateEnd  
-                };
+                    float baseY = (float)Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras[cameraSettingIndex].MEASURE_FLOOR_POSITION / 100 * scan.Height;
+                    PointF baseStart = new PointF(0, baseY);
+                    PointF baseEnd = new PointF(scan.Width, baseY);
+                    var basePoints = new PointF[]
+                    {
+                    baseStart,
+                    baseEnd  
+                    };
+                    
+                    float calibrateY = (float)Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras[cameraSettingIndex].CALIBRATION_LINE_POSITION / 100 * scan.Height;
+                    PointF calibrateStart = new PointF(0, calibrateY);
+                    PointF calibrateEnd = new PointF(scan.Width, calibrateY);
+                    var calibratePoints = new PointF[]
+                    {
+                        calibrateStart,
+                        calibrateEnd  
+                    };
 
-                scan.Mutate(imageContext =>
-                {
-                    imageContext.DrawLine(Color.Blue, 2, basePoints);
-                    imageContext.DrawLine(Color.Green, 2, calibratePoints);
-                });
-                ImageBuilder.UpdateImage(image, scan);
+                    scan.Mutate(imageContext =>
+                    {
+                        imageContext.DrawLine(Color.Blue, 2, basePoints);
+                        imageContext.DrawLine(Color.Green, 2, calibratePoints);
+                    });
+                    ImageBuilder.UpdateImage(image, scan);
 
-                
-                var calibrationInput = Global.FindAvaloniaControl<Avalonia.Controls.NumericUpDown>(CAMERA_POPUP_CANVAS, "CAMERA_CALIBRATION_HEIGHT");
-                if(calibrationInput != null)
-                {
-                    double calibration = Math.Round(Math.Abs(baseY - calibrateY) / (double)calibrationInput.Value!, 4);
-                    Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras[cameraSettingIndex].PIXELS_PER_MM = calibration;
+                    
+                    var calibrationInput = Global.FindAvaloniaControl<Avalonia.Controls.NumericUpDown>(CAMERA_POPUP_CANVAS, "CAMERA_CALIBRATION_HEIGHT");
+                    if(calibrationInput != null)
+                    {
+                        double calibration = Math.Round(Math.Abs(baseY - calibrateY) / (double)calibrationInput.Value!, 4);
+                        Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras[cameraSettingIndex].PIXELS_PER_MM = calibration;
+                    }
+
+                    var offsetInput = Global.FindAvaloniaControl<Avalonia.Controls.NumericUpDown>(CAMERA_POPUP_CANVAS, "CAMERA_MEASURE_OFFSET");
+                    if(offsetInput != null)
+                    {
+                        Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras[cameraSettingIndex].MEASUREMENT_OFFSET_MM = (double)offsetInput.Value!;
+                    }
                 }
-
-                var offsetInput = Global.FindAvaloniaControl<Avalonia.Controls.NumericUpDown>(CAMERA_POPUP_CANVAS, "CAMERA_MEASURE_OFFSET");
-                if(offsetInput != null)
+                if(Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].TrackingMode == TrackMode.HORIZONTAL_DISTANCE)
                 {
-                    Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras[cameraSettingIndex].MEASUREMENT_OFFSET_MM = (double)offsetInput.Value!;
+                    float baseY = (float)Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras[cameraSettingIndex].MEASURE_FLOOR_POSITION / 100 * scan.Width;
+                    PointF baseStart = new PointF(baseY, 0);
+                    PointF baseEnd = new PointF(baseY, scan.Height);
+                    var basePoints = new PointF[]
+                    {
+                        baseStart,
+                        baseEnd  
+                    };
+                    
+                    float calibrateY = (float)Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras[cameraSettingIndex].CALIBRATION_LINE_POSITION / 100 * scan.Width;
+                    PointF calibrateStart = new PointF(calibrateY, 0);
+                    PointF calibrateEnd = new PointF(calibrateY, scan.Height);
+                    var calibratePoints = new PointF[]
+                    {
+                        calibrateStart,
+                        calibrateEnd  
+                    };
+
+                    scan.Mutate(imageContext =>
+                    {
+                        imageContext.DrawLine(Color.Blue, 2, basePoints);
+                        imageContext.DrawLine(Color.Green, 2, calibratePoints);
+                    });
+                    ImageBuilder.UpdateImage(image, scan);
+
+                    
+                    var calibrationInput = Global.FindAvaloniaControl<Avalonia.Controls.NumericUpDown>(CAMERA_POPUP_CANVAS, "CAMERA_CALIBRATION_HEIGHT");
+                    if(calibrationInput != null)
+                    {
+                        double calibration = Math.Round(Math.Abs(baseY - calibrateY) / (double)calibrationInput.Value!, 4);
+                        Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras[cameraSettingIndex].PIXELS_PER_MM = calibration;
+                    }
+
+                    var offsetInput = Global.FindAvaloniaControl<Avalonia.Controls.NumericUpDown>(CAMERA_POPUP_CANVAS, "CAMERA_MEASURE_OFFSET");
+                    if(offsetInput != null)
+                    {
+                        Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras[cameraSettingIndex].MEASUREMENT_OFFSET_MM = (double)offsetInput.Value!;
+                    }
                 }
+                
             }
         }
     }
@@ -232,41 +277,81 @@ public partial class CameraPopup : Window
         var image = Global.FindAvaloniaControl<Avalonia.Controls.Image>(CAMERA_POPUP_CANVAS, "CAMERA_FEED");
         if(image != null)
         {
-            SixLabors.ImageSharp.Image? scan = Global.RECORDING_FRAMES[Global.CURRENT_FRAME_INDEX].GetImage(this._cam.GetParams().GetParameter<string>("InputName")!)!.Clone(ctx => {});
+            SixLabors.ImageSharp.Image? scan = Global.RECORDING_FRAMES[Global.CURRENT_FRAME_INDEX].GetImage(this._cam.GetParams()!.GetParameter<string>("InputName")!)!.Clone(ctx => {});
             if(scan != null)
             {
-                float baseY = (float)Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras[cameraSettingIndex].MEASURE_FLOOR_POSITION / 100 * scan.Height;
-                PointF baseStart = new PointF(0, baseY);
-                PointF baseEnd = new PointF(scan.Width, baseY);
-                var basePoints = new PointF[]
+                if(Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].TrackingMode == TrackMode.VERTICLE_DISTANCE)
                 {
-                baseStart,
-                baseEnd  
-                };
+                    float baseY = (float)Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras[cameraSettingIndex].MEASURE_FLOOR_POSITION / 100 * scan.Height;
+                    PointF baseStart = new PointF(0, baseY);
+                    PointF baseEnd = new PointF(scan.Width, baseY);
+                    var basePoints = new PointF[]
+                    {
+                    baseStart,
+                    baseEnd  
+                    };
 
-                float calibrateY = (float)this.measurePoint / 100 * scan.Height;
-                PointF calibrateStart = new PointF(0, calibrateY);
-                PointF calibrateEnd = new PointF(scan.Width, calibrateY);
-                var calibratePoints = new PointF[]
-                {
-                    calibrateStart,
-                    calibrateEnd  
-                };
+                    float calibrateY = (float)this.measurePoint / 100 * scan.Height;
+                    PointF calibrateStart = new PointF(0, calibrateY);
+                    PointF calibrateEnd = new PointF(scan.Width, calibrateY);
+                    var calibratePoints = new PointF[]
+                    {
+                        calibrateStart,
+                        calibrateEnd  
+                    };
 
-                scan.Mutate(imageContext =>
-                {
-                    imageContext.DrawLine(Color.Blue, 2, basePoints);
-                    imageContext.DrawLine(Color.Green, 2, calibratePoints);
-                });
-                ImageBuilder.UpdateImage(image, scan);
+                    scan.Mutate(imageContext =>
+                    {
+                        imageContext.DrawLine(Color.Blue, 2, basePoints);
+                        imageContext.DrawLine(Color.Green, 2, calibratePoints);
+                    });
+                    ImageBuilder.UpdateImage(image, scan);
 
-                //Calculate distance
-                double pixelsPerMM = Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras[cameraSettingIndex].PIXELS_PER_MM;
-                double distance = Math.Round(Math.Abs(baseY - calibrateY) / pixelsPerMM, 2) + Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras[cameraSettingIndex].MEASUREMENT_OFFSET_MM;
-                var distanceText = Global.FindAvaloniaControl<Avalonia.Controls.TextBlock>(CAMERA_POPUP_CANVAS, "ANALYSIS_DISTANCE");
-                if(distanceText != null)
+                    //Calculate distance
+                    double pixelsPerMM = Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras[cameraSettingIndex].PIXELS_PER_MM;
+                    double distance = Math.Round(Math.Abs(baseY - calibrateY) / pixelsPerMM, 2) + Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras[cameraSettingIndex].MEASUREMENT_OFFSET_MM;
+                    var distanceText = Global.FindAvaloniaControl<Avalonia.Controls.TextBlock>(CAMERA_POPUP_CANVAS, "ANALYSIS_DISTANCE");
+                    if(distanceText != null)
+                    {
+                        distanceText.Text = $"DISTANCE MM: {distance}";
+                    }
+                }
+
+                if(Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].TrackingMode == TrackMode.HORIZONTAL_DISTANCE)
                 {
-                    distanceText.Text = $"DISTANCE MM: {distance}";
+                    float baseY = (float)Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras[cameraSettingIndex].MEASURE_FLOOR_POSITION / 100 * scan.Width;
+                    PointF baseStart = new PointF(baseY, 0);
+                    PointF baseEnd = new PointF(baseY, scan.Height);
+                    var basePoints = new PointF[]
+                    {
+                        baseStart,
+                        baseEnd  
+                    };
+
+                    float calibrateY = (float)this.measurePoint / 100 * scan.Width;
+                    PointF calibrateStart = new PointF(calibrateY, 0);
+                    PointF calibrateEnd = new PointF(calibrateY, scan.Height);
+                    var calibratePoints = new PointF[]
+                    {
+                        calibrateStart,
+                        calibrateEnd  
+                    };
+
+                    scan.Mutate(imageContext =>
+                    {
+                        imageContext.DrawLine(Color.Blue, 2, basePoints);
+                        imageContext.DrawLine(Color.Green, 2, calibratePoints);
+                    });
+                    ImageBuilder.UpdateImage(image, scan);
+
+                    //Calculate distance
+                    double pixelsPerMM = Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras[cameraSettingIndex].PIXELS_PER_MM;
+                    double distance = Math.Round(Math.Abs(baseY - calibrateY) / pixelsPerMM, 2) + Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras[cameraSettingIndex].MEASUREMENT_OFFSET_MM;
+                    var distanceText = Global.FindAvaloniaControl<Avalonia.Controls.TextBlock>(CAMERA_POPUP_CANVAS, "ANALYSIS_DISTANCE");
+                    if(distanceText != null)
+                    {
+                        distanceText.Text = $"DISTANCE MM: {distance}";
+                    }
                 }
                 
             }
@@ -358,6 +443,10 @@ public partial class CameraPopup : Window
         if(Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].TrackingMode == TrackMode.VERTICLE_DISTANCE || Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].TrackingMode == TrackMode.VERTICLE_TIME)
         {
             return Math.Round(yRel * 100, 2);
+        }
+        if(Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].TrackingMode == TrackMode.HORIZONTAL_DISTANCE || Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].TrackingMode == TrackMode.HORIZONTAL_TIME)
+        {
+            return Math.Round(xRel * 100, 2);
         }
         return -1;
     }

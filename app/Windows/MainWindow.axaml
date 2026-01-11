@@ -16,6 +16,7 @@
         </Rectangle>
         <StackPanel Orientation="Horizontal">
             <ComboBox x:Name="PROFILE_COMBOBOX" Grid.Row="0" Grid.Column="0" Width="200" Height="30" Margin="10,0,0,0" HorizontalAlignment="Center" VerticalAlignment="Center" SelectionChanged="ProfileComboBox_SelectionChanged"/>
+            <Button Grid.Row="0" Grid.Column="0" Click="LoadProfile" Content="RELOAD PROFILE" Width="150" Height="30" Margin="10,0,0,0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             <Button Grid.Row="0" Grid.Column="0" Click="QuitApplication" Content="QUIT APPLICATION" Width="150" Height="30" Margin="10,0,0,0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
         </StackPanel>        
         <TabControl Grid.Row="1" SelectionChanged="TabSelected">

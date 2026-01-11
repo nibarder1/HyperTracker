@@ -3,11 +3,15 @@ using Avalonia.Controls;
 
 namespace HyperTracker.Datatypes;
 
-/// <summary>
-/// Input interface.
-/// </summary>
-public interface iInput
+public interface iModule
 {
+    
+    #region Basic
+    /// <summary>
+    /// Check if module is initialized.
+    /// </summary>
+    /// <returns>True if initialized.</returns>
+    public bool IsInitialized();
     /// <summary>
     /// Initialize input.
     /// </summary>
@@ -22,11 +26,6 @@ public interface iInput
     /// </summary>
     public Task Stop();
     /// <summary>
-    /// Get last scanned object.
-    /// </summary>
-    /// <returns>Current scanned object.</returns>
-    public T? GetScan<T>();
-    /// <summary>
     /// Update input configuration parameters.
     /// </summary>
     /// <param name="parameters">Input parameters.</param>
@@ -35,7 +34,7 @@ public interface iInput
     /// Get input configuration parameter.
     /// </summary>
     /// <returns>Parameters.</returns>
-    public InputParameters GetParams();
+    public InputParameters? GetParams();
     /// <summary>
     /// Reinitialize input.
     /// </summary>
@@ -47,10 +46,13 @@ public interface iInput
     /// <returns>Type of input.</returns>
     public InputTypes GetInputType();
     /// <summary>
-    /// Check if input is initialized.
+    /// Release module resources.
     /// </summary>
-    /// <returns>True if initialized.</returns>
-    public bool IsInitialized();
+    public void Release();
+
+    #endregion
+
+    #region  Live Feed
     /// <summary>
     /// Build live feed controls.
     /// </summary>
@@ -61,27 +63,51 @@ public interface iInput
     /// <returns>Returns new control.</returns>
     public Control BuildLiveControl(int width, int height, int rootX, int rootY);
     /// <summary>
-    /// Build analysis control.
-    /// </summary>
-    /// <param name="width">Width of panel.</param>
-    /// <param name="height">Height of panel.</param>
-    /// <param name="rootX">Root x offset.</param>
-    /// <param name="rootY">Root y offset.</param>
-    /// <returns>New control.</returns>
-    public Control BuildAnalysisControl(int width, int height, int rootX, int rootY);
-    /// <summary>
     /// Update live feed controls.
     /// </summary>
     /// <param name="Root">Root control.</param>
     /// <returns>Updated control.</returns>
     public Control UpdateLiveControl(Control Root);
+
     /// <summary>
-    /// Update analysis control.
+    /// Update the live feed control internally.
     /// </summary>
-    /// <param name="frame">New frame.</param>
+    public void UpdateLiveControl();
+
+    #endregion
+
+    #region Analysis Panel
+    /// <summary>
+    /// Build analysis controls.
+    /// </summary>
+    /// <param name="width">Width of panel.</param>
+    /// <param name="height">Height of panel.</param>
+    /// <param name="rootX">Root x offset.</param>
+    /// <param name="rootY">Root y offset.</param>
+    /// <returns>Returns new control.</returns>
+    public Control BuildAnalysisControl(int width, int height, int rootX, int rootY);
+    /// <summary>
+    /// Update analysis controls.
+    /// </summary>
+    /// <param name="Root">Root control.</param>
     /// <returns>Updated control.</returns>
-    public Control UpdateAnalysisControl(Avalonia.Controls.Control Root);    
-    public Control BuildConfigControl(int width, int height, int rootX, int rootY);
-    public Control UpdateConfigControl(Control Root);
-    public void Release();
+    public Control UpdateAnalysisControl(Control Root);
+
+    /// <summary>
+    /// Update the analysis control internally.
+    /// </summary>
+    public void UpdateAnalysisControl();
+    #endregion
+
+    #region Configuration Window
+    public void BuildConfigWindow(int width, int height, int rootX, int rootY);
+    public void UpdateConfigWindow();
+    #endregion
+
+    #region  Calibration Window
+    public void BuildCalibrationWindow(int width, int height, int rootX, int rootY);
+    public void UpdateCalibrationWindow();
+    #endregion
+
+
 }

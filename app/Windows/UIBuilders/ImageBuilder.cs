@@ -1,9 +1,13 @@
+using System;
 using System.IO;
+using System.Runtime.ConstrainedExecution;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
+using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.Processing;
 
 namespace HyperTracker.Windows.UIBuilders;
 
@@ -23,9 +27,10 @@ public class ImageBuilder
     public static void UpdateImage(Avalonia.Controls.Image image, SixLabors.ImageSharp.Image source)
     {
         using var ms = new MemoryStream();
-        source.Save(ms, new PngEncoder());
+        //source.Save(ms, new PngEncoder());
+        source.SaveAsBmp(ms);
         ms.Position = 0;
         var bitmap = new Bitmap(ms);
-        image.Source = bitmap; 
+        image.Source = bitmap.CreateScaledBitmap(new Avalonia.PixelSize(1280, 720)); 
     }
 }

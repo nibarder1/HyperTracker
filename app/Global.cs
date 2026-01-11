@@ -17,7 +17,7 @@ public class Global
     /// <summary>
     /// List of configured inputs.
     /// </summary>
-    public static List<iInput> APPLICATION_INPUTS = new List<iInput>();
+    public static List<iModule> APPLICATION_INPUTS = new List<iModule>();
     /// <summary>
     /// Currently selected tab index.
     /// </summary>
@@ -92,14 +92,13 @@ public class Global
     {
         if(APPLICATION_INPUTS.Count > 0)
         {
-            foreach(iInput iInput in APPLICATION_INPUTS)
+            foreach(iModule iInput in APPLICATION_INPUTS)
             {
                 iInput.Release();
             }
         }
-        Thread.Sleep(1000);
         Console.WriteLine("Creating inputs.");
-        APPLICATION_INPUTS = new List<iInput>();
+        APPLICATION_INPUTS = new List<iModule>();
         foreach(CameraSettings camSettings in PROFILE_SETTINGS[index].Cameras)
         {
             InputParameters ip = new InputParameters();
@@ -111,7 +110,7 @@ public class Global
             ip.AddParam("IsEnabled", true);
             ip.AddParam("InputName", camSettings.CameraName);
 
-            Camera cam = new Camera(ip);
+            CameraModule cam = new CameraModule(ip);
             cam.Initialize();
             if(cam.IsInitialized())
             {

@@ -17,46 +17,41 @@ namespace HyperTracker.Windows;
 public partial class MainWindow : Window
 {
     /// <summary>
-    /// UI processing thread.
-    /// </summary>
-    private Thread _updateUIThread;
-    /// <summary>
-    /// Thread to capture frames.
-    /// </summary>
-    private Thread _captureThread;
-    /// <summary>
     /// Initialize main Avalonia window.
     /// </summary>
     public MainWindow()
     {
-        Global.LoadSettings();
-        Global.LoadProfile(0);
         InitializeComponent();
-        this.WindowState = WindowState.FullScreen;
-        _updateUIThread = new Thread(UpdateUI);
-        _updateUIThread.Start();
-        _captureThread = new Thread(Threads.CaptureThread.ThreadLoop);
-        _captureThread.Start();
+        this.WindowState = WindowState.FullScreen;  
+        Task.Run(DelayInitialBuild);
+    }
+
+    private async Task DelayInitialBuild()
+    {
+        await Task.Delay(1000);
+        Global.REBUILD_UI = true;
+        this.UpdateUISingle();
     }
 
     public void ProfileComboBox_SelectionChanged(object sender, RoutedEventArgs args)
     {
         var box = sender as ComboBox;
-        if(box != null)
+        if(box != null && box.SelectedIndex != Global.LOADED_PROFILE && box.SelectedIndex >= 0 && Global.REBUILD_UI == false)
         {
             
             int selected = box.SelectedIndex;
-            Console.WriteLine($"Changine Profiles: {selected}");
-            try
-            {
-                Global.LoadProfile(selected);
-            }
-            catch
-            {
-                
-            }
-            
+            Global.LOADED_PROFILE = selected;
+            Task.Run(DelayLoadProfile);
         }
+    }
+
+    public async Task DelayLoadProfile()
+    {        
+        Global.LoadProfile(Global.LOADED_PROFILE);
+        UpdateUISingle();
+        await Task.Delay(1000);
+        Global.LoadProfile(Global.LOADED_PROFILE);
+        UpdateUISingle(); 
     }
 
 #region LIVE CONTROLS
@@ -65,11 +60,15 @@ public partial class MainWindow : Window
         Global.RECORDING_FRAMES.Clear();
         Global.IS_RECORDING = true;
         LIVE_STATUS_TEXT.Text = "STATUS: RECORDING";
+        LIVE_BORDER.BorderBrush = CreateGradient(new Color(255, 0, 150, 0), new Color(255, 0, 0, 0));
+        LIVE_BORDER.Background = CreateGradient(new Color(255, 0, 150, 0), new Color(255, 0, 0, 0));
     }
     public void LiveStopButton_Click(object sender, RoutedEventArgs args)
     {       
         Global.IS_RECORDING = false;
         LIVE_STATUS_TEXT.Text = "STATUS: IDLE";
+        LIVE_BORDER.BorderBrush = CreateGradient(new Color(255, 150, 0, 0), new Color(255, 0, 0, 0));
+        LIVE_BORDER.Background = CreateGradient(new Color(255, 150, 0, 0), new Color(255, 0, 0, 0));
     }
 #endregion
 
@@ -86,11 +85,21 @@ public partial class MainWindow : Window
     public void AnalysisNextFrameButton_Click(object sender, RoutedEventArgs args)
     {       
         Global.CURRENT_FRAME_INDEX = (Global.CURRENT_FRAME_INDEX + 1) % Global.RECORDING_FRAMES.Count;
+        foreach(iModule i in Global.APPLICATION_INPUTS)
+        {
+            i.UpdateAnalysisControl(ANALYSIS_CANVAS);
+            ANALYSIS_FRAME_SLIDER.Maximum = Global.RECORDING_FRAMES.Count - 1;            
+        }
     }
 
     public void AnalysisPreviousFrameButton_Click(object sender, RoutedEventArgs args)
     {       
         Global.CURRENT_FRAME_INDEX = (Global.CURRENT_FRAME_INDEX - 1) % Global.RECORDING_FRAMES.Count;
+        foreach(iModule i in Global.APPLICATION_INPUTS)
+        {
+            i.UpdateAnalysisControl(ANALYSIS_CANVAS);
+            ANALYSIS_FRAME_SLIDER.Maximum = Global.RECORDING_FRAMES.Count - 1;            
+        }
     }
 
     public void AnalysisFrameSlider_Changed(object sender, RoutedEventArgs args)
@@ -104,6 +113,11 @@ public partial class MainWindow : Window
         {
             int index = (int)slider.Value;
             Global.CURRENT_FRAME_INDEX = index;
+        }
+        foreach(iModule i in Global.APPLICATION_INPUTS)
+        {
+            i.UpdateAnalysisControl(ANALYSIS_CANVAS);
+            ANALYSIS_FRAME_SLIDER.Maximum = Global.RECORDING_FRAMES.Count - 1;            
         }
     }
 #endregion
@@ -128,6 +142,18 @@ public partial class MainWindow : Window
     {       
         Handlers.ApplicationHandler.QuitApplication();
     }
+
+    public void LoadProfile(object sender, RoutedEventArgs args)
+    {       
+        try
+        {
+            Task.Run(DelayLoadProfile);
+        }
+        catch
+        {
+            
+        }
+    }
     /// <summary>
     /// Tab control tab changed event handler.
     /// </summary>
@@ -136,7 +162,54 @@ public partial class MainWindow : Window
     public void TabSelected(object sender, SelectionChangedEventArgs e)
     {
         Handlers.TabHandler.ChangeTab(sender, e);
-        Global.REBUILD_UI = true;
+        Task.Run(DelayInitialBuild);
+        
+    }
+
+    public void UpdateUISingle()
+    {
+        Dispatcher.UIThread.Invoke(() =>
+        {
+            List<string> items = new List<string>();
+            foreach(var profile in Global.PROFILE_SETTINGS)
+            {
+                items.Add(profile.ProfileName);
+            }
+            PROFILE_COMBOBOX.ItemsSource = items;
+            PROFILE_COMBOBOX.SelectedIndex = Global.LOADED_PROFILE;
+        });
+        if(Global.APPLICATION_INPUTS.Count > 0)
+        {
+            if(Global.REBUILD_UI)
+            {
+                if(Global.CURRENT_TAB == 0)
+                {
+                    BuildLiveCanvas();
+                }
+                if(Global.CURRENT_TAB == 1)
+                {
+                    BuildAnalysisCanvas();
+                }
+                if(Global.CURRENT_TAB == 2)
+                {
+                    BuildConfigurationCanvas();
+                }
+                
+                Global.REBUILD_UI = false;
+            }
+            foreach(iModule i in Global.APPLICATION_INPUTS)
+            {
+                if(Global.CURRENT_TAB == 1)
+                {
+                    i.UpdateAnalysisControl(ANALYSIS_CANVAS);
+                    Dispatcher.UIThread.Invoke(() =>
+                    {
+                        ANALYSIS_FRAME_SLIDER.Maximum = Global.RECORDING_FRAMES.Count - 1;
+                    });
+                    
+                }                
+            }
+        }
     }
 
     public void UpdateUI()
@@ -172,25 +245,11 @@ public partial class MainWindow : Window
                     
                     Global.REBUILD_UI = false;
                 }
-                foreach(iInput i in Global.APPLICATION_INPUTS)
+                foreach(iModule i in Global.APPLICATION_INPUTS)
                 {
                     if(Global.CURRENT_TAB == 0)
                     {
                         i.UpdateLiveControl(LIVE_CANVAS);
-                        Dispatcher.UIThread.Invoke(() =>
-                        {
-                            if(Global.IS_RECORDING)
-                            {
-                                
-                                LIVE_BORDER.BorderBrush = CreateGradient(new Color(255, 0, 150, 0), new Color(255, 0, 0, 0));
-                                LIVE_BORDER.Background = CreateGradient(new Color(255, 0, 150, 0), new Color(255, 0, 0, 0));
-                            }else
-                            {
-                                LIVE_BORDER.BorderBrush = CreateGradient(new Color(255, 150, 0, 0), new Color(255, 0, 0, 0));
-                                LIVE_BORDER.Background = CreateGradient(new Color(255, 150, 0, 0), new Color(255, 0, 0, 0));
-                            }
-                            
-                        });
                     }
                     if(Global.CURRENT_TAB == 1)
                     {
@@ -203,7 +262,7 @@ public partial class MainWindow : Window
                     }
                     if(Global.CURRENT_TAB == 2)
                     {
-                        i.UpdateConfigControl(CONFIG_CANVAS);
+                        //i.UpdateConfigControl(CONFIG_CANVAS);
                     }
                     
                 }
@@ -234,7 +293,7 @@ public partial class MainWindow : Window
                 {
                     height = width/2;
                 }
-                foreach(iInput i in Global.APPLICATION_INPUTS)
+                foreach(iModule i in Global.APPLICATION_INPUTS)
                 {
                     int x = width * (currentControl % controlsPerRow);
                     int y = height * (currentControl / controlsPerRow);
@@ -265,7 +324,7 @@ public partial class MainWindow : Window
                 {
                     height = width/2;
                 }
-                foreach(iInput i in Global.APPLICATION_INPUTS)
+                foreach(iModule i in Global.APPLICATION_INPUTS)
                 {
                     int x = width * (currentControl % controlsPerRow);
                     int y = height * (currentControl / controlsPerRow);
@@ -293,13 +352,13 @@ public partial class MainWindow : Window
                 {
                     height = width/2;
                 }
-                foreach(iInput i in Global.APPLICATION_INPUTS)
+                foreach(iModule i in Global.APPLICATION_INPUTS)
                 {
-                    int x = width * (currentControl % controlsPerRow);
-                    int y = height * (currentControl / controlsPerRow);
-                    var control = i.BuildConfigControl(width, height, x, y);
-                    Console.WriteLine(control.Name);
-                    CONFIG_CANVAS.Children.Add(control);
+                    // int x = width * (currentControl % controlsPerRow);
+                    // int y = height * (currentControl / controlsPerRow);
+                    // var control = i.BuildConfigControl(width, height, x, y);
+                    // Console.WriteLine(control.Name);
+                    // CONFIG_CANVAS.Children.Add(control);
                     currentControl++;
                 }
             }catch{}
