@@ -138,7 +138,8 @@ public partial class CameraPopup : Window
         calibrationLine.ValueChanged += calibrateCalibrateLine_Changed;
         TextBlock cameraCalibrationHeightLabel = TextBlockBuilder.CreateTextBlock(100, 50, 430, 10, "CAMERA_CALIBRATION_HEIGHT_LABEL", "CALIBRATION MM");
         NumericUpDown cameraCalibrationHeight = NumberInputBuilder.CreateNumberInput(200, 50, 430, 40, "CAMERA_CALIBRATION_HEIGHT");
-        cameraCalibrationHeight.Value = 50;
+        cameraCalibrationHeight.Value = (decimal)Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras[cameraSettingIndex].CALIBRATION_MM;
+        cameraCalibrationHeight.ValueChanged += calibrateDistance_Changed;
         TextBlock cameraOffsetLabel = TextBlockBuilder.CreateTextBlock(100, 50, 640, 10, "CAMERA_MEASUREMENT_OFFSET_LABEL", "MEASUREMENT OFFSET MM");
         NumericUpDown cameraOffset = NumberInputBuilder.CreateNumberInput(200, 50, 640, 40, "CAMERA_MEASURE_OFFSET");
         cameraOffset.Value = (decimal)Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras[cameraSettingIndex].MEASUREMENT_OFFSET_MM;
@@ -163,6 +164,7 @@ public partial class CameraPopup : Window
         CAMERA_POPUP_CANVAS.Children.Add(cameraOffsetLabel);
         CAMERA_POPUP_CANVAS.Children.Add(cameraOffset);
         CAMERA_POPUP_CANVAS.Children.Add(baseLineHelp);
+        UpdateCalibratePanel();
     }
 
     public void UpdateCalibratePanel()
@@ -401,6 +403,27 @@ public partial class CameraPopup : Window
         }
     }
 
+    public void calibrateDistance_Changed(object? sender, RoutedEventArgs e)
+    {
+        var number = sender as NumericUpDown;
+        double pixels = 0;
+        SixLabors.ImageSharp.Image? scan = this._cam.GetScan();
+        if(scan != null && Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].TrackingMode == TrackMode.VERTICLE_DISTANCE)
+        {
+            float baseY = (float)Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras[cameraSettingIndex].MEASURE_FLOOR_POSITION / 100 * scan.Height;
+            float calibY = (float)Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras[cameraSettingIndex].CALIBRATION_LINE_POSITION / 100 * scan.Height;
+            pixels = Math.Abs(baseY - calibY);
+        }
+        
+        if(number != null)
+        {
+            Console.WriteLine(number.Value);
+            Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras[cameraSettingIndex].CALIBRATION_MM = (double)number.Value!;
+            Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras[cameraSettingIndex].PIXELS_PER_MM = pixels / Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras[cameraSettingIndex].CALIBRATION_MM;
+            UpdateCalibratePanel();
+        }
+    }
+
     public void cameraFeedCalibrateImage_Clicked(object? sender, PointerPressedEventArgs e)
     {
         if(sender != null)
@@ -415,6 +438,16 @@ public partial class CameraPopup : Window
             {
                 //Calibrate Line
                 Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras[cameraSettingIndex].CALIBRATION_LINE_POSITION = Position;
+            }
+
+            SixLabors.ImageSharp.Image? scan = this._cam.GetScan();
+            double pixels = 0;
+            if(scan != null && Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].TrackingMode == TrackMode.VERTICLE_DISTANCE)
+            {
+                float baseY = (float)Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras[cameraSettingIndex].MEASURE_FLOOR_POSITION / 100 * scan.Height;
+                float calibY = (float)Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras[cameraSettingIndex].CALIBRATION_LINE_POSITION / 100 * scan.Height;
+                pixels = Math.Abs(baseY - calibY);
+                Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras[cameraSettingIndex].PIXELS_PER_MM = pixels / Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras[cameraSettingIndex].CALIBRATION_MM;
             }
             UpdateCalibratePanel();
         }

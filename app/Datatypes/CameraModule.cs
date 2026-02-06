@@ -12,6 +12,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia;
 using HyperTracker.Windows.UIBuilders;
 using Avalonia.Interactivity;
+using SixLabors.ImageSharp.Processing;
 
 namespace HyperTracker.Datatypes;
 
@@ -54,7 +55,11 @@ public class CameraModule : iModule
 
     public SixLabors.ImageSharp.Image? GetScan()
     {
-        return this._lastScan;
+        if(this._lastScan != null)
+        {
+            return this._lastScan;
+        }
+        return null;
     }
 
     /// <summary>

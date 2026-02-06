@@ -26,11 +26,15 @@ public class ImageBuilder
 
     public static void UpdateImage(Avalonia.Controls.Image image, SixLabors.ImageSharp.Image source)
     {
-        using var ms = new MemoryStream();
-        //source.Save(ms, new PngEncoder());
-        source.SaveAsBmp(ms);
-        ms.Position = 0;
-        var bitmap = new Bitmap(ms);
-        image.Source = bitmap.CreateScaledBitmap(new Avalonia.PixelSize(1280, 720)); 
+        try
+        {
+            using var ms = new MemoryStream();
+            //source.Save(ms, new PngEncoder());
+            source.SaveAsBmp(ms);
+            ms.Position = 0;
+            var bitmap = new Bitmap(ms);
+            image.Source = bitmap; 
+        }catch{}
+        
     }
 }

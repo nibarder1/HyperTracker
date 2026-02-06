@@ -10,8 +10,9 @@ public class CameraSettings
     public int FPS = 120;
     public double MEASURE_FLOOR_POSITION = 100;
     public double CALIBRATION_LINE_POSITION = 90;
-    public double PIXELS_PER_MM = 10;
+    public double CALIBRATION_MM = 10;
     public double MEASUREMENT_OFFSET_MM = 0;
+    public double PIXELS_PER_MM = 0;
 
     public CameraSettings(bool Enabled,
                             string CameraName,
@@ -21,7 +22,7 @@ public class CameraSettings
                             int FPS,
                             double MEASURE_FLOOR_POSITION,
                             double CALIBRATION_LINE_POSITION,
-                            double PIXELS_PER_MM,
+                            double CALIBRATION_MM,
                             double MEASUREMENT_OFFSET_MM)
     {
         this.Enabled = Enabled;
@@ -32,7 +33,7 @@ public class CameraSettings
         this.FPS = FPS;
         this.MEASURE_FLOOR_POSITION = MEASURE_FLOOR_POSITION;
         this.CALIBRATION_LINE_POSITION = CALIBRATION_LINE_POSITION;
-        this.PIXELS_PER_MM = PIXELS_PER_MM;
+        this.CALIBRATION_MM = CALIBRATION_MM;
         this.MEASUREMENT_OFFSET_MM = MEASUREMENT_OFFSET_MM;
     }
 
