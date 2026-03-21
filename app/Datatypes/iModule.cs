@@ -91,12 +91,12 @@ public interface iModule
     /// </summary>
     /// <param name="Root">Root control.</param>
     /// <returns>Updated control.</returns>
-    public Control UpdateAnalysisControl(Control Root);
+    public Control UpdateAnalysisControl(Control Root, int frameIndex);
 
     /// <summary>
     /// Update the analysis control internally.
     /// </summary>
-    public void UpdateAnalysisControl();
+    public void UpdateAnalysisControl(int frameIndex);
     #endregion
 
     #region Configuration Window

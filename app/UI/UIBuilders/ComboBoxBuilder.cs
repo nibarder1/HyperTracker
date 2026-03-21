@@ -3,7 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Threading;
 
-namespace HyperTracker.Windows.UIBuilders;
+namespace HyperTracker.UI.UIBuilders;
 
 public class ComboBoxBuilder
 {

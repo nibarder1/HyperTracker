@@ -8,35 +8,29 @@ namespace HyperTracker.Threads;
 
 public class CaptureThread
 {
-    public static void ThreadLoop()
+
+    public static void CaptureFrame()
     {
-        while(true)
+        Frame frame = new Frame(DateTime.Now);
+        foreach(iModule i in Global.APPLICATION_INPUTS)
         {
-            if(Global.IS_RECORDING)
+            if(i.GetInputType() == InputTypes.CAMERA)
             {
-                Frame frame = new Frame(DateTime.Now);
-                foreach(iModule i in Global.APPLICATION_INPUTS)
+                CameraModule? c = i as CameraModule;
+                if(c != null)
                 {
-                    if(i.GetInputType() == InputTypes.CAMERA)
+                    Image? img = c.GetScan();
+                    if(img != null)
                     {
-                        CameraModule? c = i as CameraModule;
-                        if(c != null)
-                        {
-                            Image? img = c.GetScan();
-                            if(img != null)
-                            {
-                                frame.AddImageToFrame(img, c.GetParams()!.GetParameter<string>("InputName")!);
-                            }                            
-                        }
-                    }
-                }
-                Global.RECORDING_FRAMES.Add(frame);
-                if(Global.RECORDING_FRAMES.Count > Global.MAX_FRAMES)
-                {
-                    Global.RECORDING_FRAMES.RemoveAt(0);
+                        frame.AddImageToFrame(img, c.GetParams()!.GetParameter<string>("InputName")!);
+                    }                            
                 }
             }
-            Thread.Sleep(Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].TargetCycleMs);
+        }
+        Global.RECORDING_FRAMES.Add(frame);
+        if(Global.RECORDING_FRAMES.Count > 1500)
+        {
+            Global.RECORDING_FRAMES.RemoveAt(0);
         }
     }
 }

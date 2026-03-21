@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 
-namespace HyperTracker.Windows.UIBuilders;
+namespace HyperTracker.UI.UIBuilders;
 
 public class NumberInputBuilder
 {

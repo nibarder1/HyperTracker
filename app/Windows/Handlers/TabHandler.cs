@@ -17,10 +17,9 @@ public class TabHandler
     {
         var tabControl = (TabControl)sender;
         int tabIndex = tabControl.SelectedIndex;
-        Global.CURRENT_TAB = tabIndex;
-        if(tabIndex == 1)
+        if(tabIndex == 1 && Global.CURRENT_FRAME >= Global.RECORDING_FRAMES.Count)
         {
-            Global.CURRENT_FRAME_INDEX = 0;
+            GlobalEvents.InvokeFrameChange(0);
         }
         if(tabIndex == 2)
         {

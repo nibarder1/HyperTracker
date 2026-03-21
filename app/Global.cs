@@ -14,75 +14,30 @@ namespace HyperTracker;
 
 public class Global
 {
-    /// <summary>
-    /// List of configured inputs.
-    /// </summary>
-    public static List<iModule> APPLICATION_INPUTS = new List<iModule>();
-    /// <summary>
-    /// Currently selected tab index.
-    /// </summary>
-    public static int CURRENT_TAB = 0;
-    /// <summary>
-    /// Maximum recording frames.
-    /// </summary>
-    public static int MAX_FRAMES = 1500;
 
     /// <summary>
-    /// Recording frames from all inputs.
-    /// </summary>
-    public static bool IS_RECORDING = false;
-    /// <summary>
-    /// Recording frames.
-    /// </summary>
-    public static List<Frame> RECORDING_FRAMES = new List<Frame>();
-
-    /// <summary>
-    /// Available profiles.
+    /// Profile settings.
     /// </summary>
     public static List<Settings> PROFILE_SETTINGS = new List<Settings>();
 
     /// <summary>
-    /// Currently loaded profile index.
+    /// Loaded profile application input modules.
     /// </summary>
+    public static List<iModule> APPLICATION_INPUTS = new List<iModule>();
+
+    /// <summary>
+    /// Recording frame buffer.
+    /// </summary>
+    public static List<Frame> RECORDING_FRAMES = new List<Frame>();
+
+    /// <summary>
+    /// Current loaded frame.
+    /// </summary>
+    public static int CURRENT_FRAME = 0;
+
     public static int LOADED_PROFILE = 0;
 
-    /// <summary>
-    /// Current index of the recorded frames.
-    /// </summary>
-    public static int CURRENT_FRAME_INDEX  = 0;
-
-    /// <summary>
-    /// Flag to rebuild current UI.
-    /// </summary>
-    public static bool REBUILD_UI = true;
-
-    /// <summary>
-    /// Get Avalonia control by name.
-    /// </summary>
-    /// <typeparam name="T">Control type.</typeparam>
-    /// <param name="root">Root control.</param>
-    /// <param name="name">Name of control to find.</param>
-    /// <returns>Control or null.</returns>
-    public static T? FindAvaloniaControl<T>(Control root, string name) where T: Control
-    {
-        return root.GetVisualDescendants().OfType<T>().FirstOrDefault(c => c.Name == name);
-    }
-
-    /// <summary>
-    /// Load profile using name.
-    /// </summary>
-    /// <param name="profileName">Name of the profile to load.</param>
-    public static void LoadProfile(string profileName)
-    {
-        for(int i = 0; i < PROFILE_SETTINGS.Count; i++)
-        {
-            if(PROFILE_SETTINGS[i].ProfileName.Equals(profileName))
-            {
-                LoadProfile(i);
-                return;
-            }
-        }
-    }
+    
 
     /// <summary>
     /// Load profile using index.
@@ -121,9 +76,6 @@ public class Global
 
             APPLICATION_INPUTS.Add(cam);
         }
-
-        REBUILD_UI = true;
-
     }
 
     /// <summary>
@@ -136,7 +88,7 @@ public class Global
         if(!File.Exists($"{root}/data/profiles.json"))
         {
             LoadDefaultSettings();
-            SaveSettings();
+            GlobalEvents.InvokeSettingsChange();
         }else
         {
             string json = File.ReadAllText($"{root}/data/profiles.json");
@@ -162,7 +114,7 @@ public class Global
         List<CameraSettings> cameras = [camera1Settings, camera2Settings];
         Settings defaultSettings = new Settings("DEFAULT", TrackMode.VERTICLE_DISTANCE, 5, cameras);
         PROFILE_SETTINGS = [defaultSettings];
-        LOADED_PROFILE = 0;
+        GlobalEvents.InvokeLoadProfile(0);
     }
 
     /// <summary>

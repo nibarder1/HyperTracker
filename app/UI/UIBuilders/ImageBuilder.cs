@@ -9,7 +9,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Processing;
 
-namespace HyperTracker.Windows.UIBuilders;
+namespace HyperTracker.UI.UIBuilders;
 
 public class ImageBuilder
 {

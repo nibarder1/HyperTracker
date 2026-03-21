@@ -1,7 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Media;
 
-namespace HyperTracker.Windows.UIBuilders;
+namespace HyperTracker.UI.UIBuilders;
 
 public class CanvasBuilder
 {

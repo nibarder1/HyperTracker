@@ -10,9 +10,8 @@ using Avalonia.Threading;
 using HyperTracker.Windows;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia;
-using HyperTracker.Windows.UIBuilders;
-using Avalonia.Interactivity;
-using SixLabors.ImageSharp.Processing;
+using HyperTracker.UI.UIBuilders;
+using HyperTracker.UI;
 
 namespace HyperTracker.Datatypes;
 
@@ -157,13 +156,13 @@ public class CameraModule : iModule
             double timeMS = (currentTime - this._lastFrameTime).TotalMilliseconds;
             this._lastFrameTime = currentTime;
             this.FRAME_RATE = (int)(1000/timeMS);
-            if(Global.CURRENT_TAB == 0 && this._currentPopup == null)
-            {
-                UpdateLiveControl();
-            }
         }catch
         {
             Console.WriteLine($"Error processing frame for camera: {this._parameters!.GetParameter<string>("InputName")}");
+            DateTime currentTime = DateTime.Now;
+            double timeMS = (currentTime - this._lastFrameTime).TotalMilliseconds;
+            this._lastFrameTime = currentTime;
+            this.FRAME_RATE = (int)(1000/timeMS);
         }
         
     }
@@ -323,13 +322,13 @@ public class CameraModule : iModule
     {
         Dispatcher.UIThread.Invoke(() =>
         {
-            var fpsText = Global.FindAvaloniaControl<TextBlock>(Root, $"{this._parameters!.GetParameter<string>("InputName")}_FPS_TEXT");
-            if(fpsText != null && DateTime.Now.Millisecond < 20)
+            var fpsText = UIControl.FindAvaloniaControl<TextBlock>(Root, $"{this._parameters!.GetParameter<string>("InputName")}_FPS_TEXT");
+            if(fpsText != null)
             {
                 fpsText.Text = $"FRAME RATE: {this.FRAME_RATE}";
             }
 
-            var imgControl = Global.FindAvaloniaControl<Avalonia.Controls.Image>(Root, $"{this._parameters.GetParameter<string>("InputName")}_CAMERA");
+            var imgControl = UIControl.FindAvaloniaControl<Avalonia.Controls.Image>(Root, $"{this._parameters.GetParameter<string>("InputName")}_CAMERA");
             if(imgControl != null && this._lastScan != null)
             {
                 ImageBuilder.UpdateImage(imgControl, this._lastScan);
@@ -403,16 +402,16 @@ public class CameraModule : iModule
     /// </summary>
     /// <param name="Root">Root control.</param>
     /// <returns>Updated control.</returns>
-    public Control UpdateAnalysisControl(Control Root)
+    public Control UpdateAnalysisControl(Control Root, int frameIndex)
     {
         Dispatcher.UIThread.Invoke(() =>
         {
             
-            var imgControl = Global.FindAvaloniaControl<Avalonia.Controls.Image>(Root, $"{this._parameters!.GetParameter<string>("InputName")}_ANALYSIS_CAMERA");
-            var timestamp = Global.FindAvaloniaControl<TextBlock>(Root, $"{this._parameters.GetParameter<string>("InputName")}_ANALYSIS_TIMESTAMP");
+            var imgControl = UIControl.FindAvaloniaControl<Avalonia.Controls.Image>(Root, $"{this._parameters!.GetParameter<string>("InputName")}_ANALYSIS_CAMERA");
+            var timestamp = UIControl.FindAvaloniaControl<TextBlock>(Root, $"{this._parameters.GetParameter<string>("InputName")}_ANALYSIS_TIMESTAMP");
             if(imgControl != null && Global.RECORDING_FRAMES.Count > 0)
             {
-                var img = Global.RECORDING_FRAMES[Global.CURRENT_FRAME_INDEX].GetImage(this._parameters.GetParameter<string>("InputName")!);
+                var img = Global.RECORDING_FRAMES[frameIndex].GetImage(this._parameters.GetParameter<string>("InputName")!);
                 if(img != null)
                 {
                     ImageBuilder.UpdateImage(imgControl, img);
@@ -420,7 +419,7 @@ public class CameraModule : iModule
 
                 if(timestamp != null)
                 {
-                    timestamp.Text = Global.RECORDING_FRAMES[Global.CURRENT_FRAME_INDEX].TimeStamp.ToString("MM/dd/yyyy hh:mm:ss.fff");
+                    timestamp.Text = Global.RECORDING_FRAMES[frameIndex].TimeStamp.ToString("MM/dd/yyyy hh:mm:ss.fff");
                 }
                 
             }
@@ -432,11 +431,11 @@ public class CameraModule : iModule
     /// <summary>
     /// Update the analysis control internally.
     /// </summary>
-    public void UpdateAnalysisControl()
+    public void UpdateAnalysisControl(int frameIndex)
     {
         if(this._analysisCanvas != null)
         {
-            UpdateAnalysisControl(this._analysisCanvas);
+            UpdateAnalysisControl(this._analysisCanvas, frameIndex);
         }
         
     }
@@ -446,44 +445,14 @@ public class CameraModule : iModule
 
     private Canvas? _configCanvas = null;
 
-    private void ConfigCameraImage_Click(object? sender, PointerPressedEventArgs args)
-    {     
-        if(((IClassicDesktopStyleApplicationLifetime)Application.Current!.ApplicationLifetime!).Windows.Count == 1)
-        {
-            var window = new CameraPopup(this);
-            window.Width = 1280;
-            window.Height = 920;
-            window.Show();
-            window.Position = new PixelPoint(10, 10);
-            window.ShowConfigPanel();
-            window.Closing += (object? sender, WindowClosingEventArgs e) =>
-            {
-                this._currentPopup = null;
-            };
-            this._currentPopup = window;
-        }  
-        
-    }
-
-
-    public void BuildConfigWindow(int width, int height, int rootX, int rootY)
-    {
-        Canvas camCanvas = CanvasBuilder.CreateCanvas(width, height, rootX, rootY, $"{this._parameters!.GetParameter<string>("InputName")}_CONFIG_CANVAS");
-
-        Avalonia.Controls.Image camFeed = ImageBuilder.CreateImage(width, height, 0, 0, $"{this._parameters.GetParameter<string>("InputName")}_CONFIG_CAMERA");
-        camFeed.PointerPressed += ConfigCameraImage_Click;
-
-        camCanvas.Children.Add(camFeed);
-
-        this._configCanvas = camCanvas;
-    }
+    
     public void UpdateConfigWindow()
     {
         if(this._configCanvas != null)
         {
             Dispatcher.UIThread.Invoke(() =>
             {
-                var imgControl = Global.FindAvaloniaControl<Avalonia.Controls.Image>(this._configCanvas, $"{this._parameters!.GetParameter<string>("InputName")}_CONFIG_CAMERA");
+                var imgControl = UIControl.FindAvaloniaControl<Avalonia.Controls.Image>(this._configCanvas, $"{this._parameters!.GetParameter<string>("InputName")}_CONFIG_CAMERA");
                 if(imgControl != null && this._lastScan != null)
                 {
                     ImageBuilder.UpdateImage(imgControl, this._lastScan);
@@ -503,6 +472,11 @@ public class CameraModule : iModule
     public void UpdateCalibrationWindow()
     {
         throw new System.NotImplementedException();
+    }
+
+    public void BuildConfigWindow(int width, int height, int rootX, int rootY)
+    {
+        throw new NotImplementedException();
     }
     #endregion
 }
