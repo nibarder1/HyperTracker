@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using HyperTracker.Datatypes;
+using HyperTracker.Recordings;
 using HyperTracker.UI;
 
 
@@ -14,7 +17,7 @@ namespace HyperTracker.Windows;
 public partial class MainWindow : Window
 {
 
-    private Timer _uiTimer;
+    private System.Timers.Timer _uiTimer;
 
     /// <summary>
     /// Initialize main Avalonia window.
@@ -23,7 +26,7 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         this.WindowState = WindowState.FullScreen;  
-        this._uiTimer = new Timer(100);
+        this._uiTimer = new System.Timers.Timer(100);
         this._uiTimer.Elapsed += _uiUpdate;
         this._uiTimer.AutoReset = true;   
 
@@ -45,9 +48,10 @@ public partial class MainWindow : Window
     {
         Task.Delay(1000);
         GlobalEvents.OnRecordStart += _startRecording;
-        GlobalEvents.OnRecordEnd += _stopRecording;
+        GlobalEvents.OnRecordEnd += _preStopRecording;
         GlobalEvents.OnLiveUIUpdate += _updateClock;
         GlobalEvents.OnRebuildUI += _rebuildUI;
+        GlobalEvents.OnFrameChange += _updateSlider;
 
         this._uiTimer.Enabled = true;
         GlobalEvents.InvokeLoadProfile(Global.LOADED_PROFILE, true);
@@ -62,6 +66,15 @@ public partial class MainWindow : Window
     #endregion
 
     #region UI ELEMENT EVENT HANDLERS
+
+    private void _updateSlider(int index)
+    {
+        Dispatcher.UIThread.Invoke(() =>
+        {
+            ANALYSIS_FRAME_SLIDER.Maximum = Global.RECORDING_FRAMES.Count;
+            ANALYSIS_FRAME_SLIDER.Value = index;
+        });
+    }
 
     private void _startRecording_Click(object sender, RoutedEventArgs args)
     {
@@ -97,6 +110,36 @@ public partial class MainWindow : Window
     private void _previousFrame_Click(object sender, RoutedEventArgs args)
     {       
         GlobalEvents.InvokePreviousFrame();
+    }
+
+    private void _openRecording_Click(object sender, RoutedEventArgs args)
+    {       
+        _openRecordingPicker();
+    }
+
+    private async Task _openRecordingPicker()
+    {
+        var topLevel = TopLevel.GetTopLevel(this);
+        var jsonFileType = new FilePickerFileType("Recording JSON")
+        {
+            Patterns = new[] {"*.json"}
+        };
+        var files = await topLevel.StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions
+        {
+            Title = "Open Recording",
+            AllowMultiple = false,
+            FileTypeFilter = new List<FilePickerFileType>
+            {
+                jsonFileType
+            }
+        });
+        if(files.Count > 0)
+        {
+            Console.WriteLine($"Opening recording: {files[0].Path}");
+            LoadRecording.OpenRecording(files[0].Path.AbsolutePath);
+            _buildAnalysis();
+        }
+        
     }
 
     private void _frameSlider_Changed(object sender, RoutedEventArgs args)
@@ -137,6 +180,7 @@ public partial class MainWindow : Window
     #endregion
 
     #region UI EVENTS
+
     private void _startRecording()
     {
         LIVE_STATUS_TEXT.Text = "STATUS: RECORDING";
@@ -146,9 +190,25 @@ public partial class MainWindow : Window
 
     private void _stopRecording()
     {
-        LIVE_STATUS_TEXT.Text = "STATUS: IDLE";
-        LIVE_BORDER.BorderBrush = Stylings.CreateGradient(Stylings.RED, Stylings.BLACK);
-        LIVE_BORDER.Background = Stylings.CreateGradient(Stylings.RED, Stylings.BLACK);
+        Dispatcher.UIThread.Invoke(() =>
+        {
+            LIVE_STATUS_TEXT.Text = "STATUS: IDLE";
+            LIVE_BORDER.BorderBrush = Stylings.CreateGradient(Stylings.RED, Stylings.BLACK);
+            LIVE_BORDER.Background = Stylings.CreateGradient(Stylings.RED, Stylings.BLACK);
+        });
+        
+    }
+
+    private void _preStopRecording()
+    {
+        LIVE_STATUS_TEXT.Text = "STATUS: SAVING RECORDING";
+        LIVE_BORDER.BorderBrush = Stylings.CreateGradient(Stylings.YELLOW, Stylings.BLACK);
+        LIVE_BORDER.Background = Stylings.CreateGradient(Stylings.YELLOW, Stylings.BLACK);
+        Task.Run(async () =>
+        {
+            await SaveRecording.Save();
+            _stopRecording();
+        });
     }
 
     private void _updateClock()

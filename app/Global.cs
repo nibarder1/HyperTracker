@@ -37,6 +37,8 @@ public class Global
 
     public static int LOADED_PROFILE = 0;
 
+    public static int MAX_FRAMES = 1500;
+
     
 
     /// <summary>
@@ -76,6 +78,8 @@ public class Global
 
             APPLICATION_INPUTS.Add(cam);
         }
+        MAX_FRAMES = PROFILE_SETTINGS[index].RecordingSeconds * 1000 / PROFILE_SETTINGS[index].TargetCycleMs;
+        Console.WriteLine($"MAX RECORDING FRAMES: {MAX_FRAMES}");
     }
 
     /// <summary>
@@ -101,7 +105,8 @@ public class Global
             {
                 LoadDefaultSettings();
             }
-        }
+        }       
+        
     }   
 
     /// <summary>
@@ -112,7 +117,7 @@ public class Global
         CameraSettings camera1Settings = new CameraSettings(true, "Floor", 0, 1280, 720, 120, 100, 90, 10, 0);
         CameraSettings camera2Settings = new CameraSettings(true, "Elevated", 1, 1280, 720, 120, 100, 90, 10, 1000);
         List<CameraSettings> cameras = [camera1Settings, camera2Settings];
-        Settings defaultSettings = new Settings("DEFAULT", TrackMode.VERTICLE_DISTANCE, 5, cameras);
+        Settings defaultSettings = new Settings("DEFAULT", TrackMode.VERTICLE_DISTANCE, 15, 5, cameras);
         PROFILE_SETTINGS = [defaultSettings];
         GlobalEvents.InvokeLoadProfile(0);
     }

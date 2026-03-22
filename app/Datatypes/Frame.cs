@@ -11,6 +11,9 @@ public class Frame
 
     public readonly DateTime TimeStamp;
 
+    public Dictionary<string, CameraFrame> CameraFrames => _cameraFrames;
+    public Dictionary<string, TOFFrame> TOFFrames => _tofFrames;
+
     public Frame(DateTime timestamp)
     {
         this.TimeStamp = timestamp;

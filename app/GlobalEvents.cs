@@ -10,6 +10,8 @@ namespace HyperTracker
         /// </summary>
         private static bool _isRecording = false;
 
+        public static bool IsSaving = false;
+
         private static int _currentFrame = 0;
 
         /// <summary>
@@ -67,7 +69,7 @@ namespace HyperTracker
         /// </summary>
         public static void InvokeOnRecordStart()
         {
-            if(_isRecording)
+            if(_isRecording || IsSaving)
             {
                 return;
             }
@@ -81,7 +83,7 @@ namespace HyperTracker
         /// </summary>
         public static void InvokeOnRecordEnd()
         {
-            if(!_isRecording)
+            if(!_isRecording || IsSaving)
             {
                 return;
             }

@@ -28,7 +28,7 @@ public class CaptureThread
             }
         }
         Global.RECORDING_FRAMES.Add(frame);
-        if(Global.RECORDING_FRAMES.Count > 1500)
+        if(Global.RECORDING_FRAMES.Count > Global.MAX_FRAMES)
         {
             Global.RECORDING_FRAMES.RemoveAt(0);
         }

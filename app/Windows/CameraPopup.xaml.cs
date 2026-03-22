@@ -34,6 +34,7 @@ public partial class CameraPopup : Window
     private void CleanupCalibrate(object? sender, WindowClosingEventArgs e)
     {
         GlobalEvents.OnLiveUIUpdate -= UpdateCalibratePanel;
+        GlobalEvents.InvokeSettingsChange();
     }
 
     private void CleanupAnalysis(object? sender, WindowClosingEventArgs e)

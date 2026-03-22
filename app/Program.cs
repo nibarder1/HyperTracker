@@ -1,4 +1,5 @@
 ﻿using Avalonia;
+using HyperTracker.Recordings;
 using HyperTracker.Threads;
 using System;
 using System.Threading;
@@ -17,7 +18,7 @@ class Program
         GlobalEvents.OnLoadProfile += Global.LoadProfile;
         GlobalEvents.OnSettingsChange += Global.SaveSettings;
         GlobalEvents.OnRecordStart += _startRecording;
-        GlobalEvents.OnRecordEnd += _stopRecording;
+        GlobalEvents.OnRecordEnd += _stopRecording;        
         GlobalEvents.OnLoadProfile += _loadProfile;
         GlobalEvents.OnCaptureFrame += CaptureThread.CaptureFrame;
 
