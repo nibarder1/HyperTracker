@@ -50,10 +50,10 @@
                     </Border.Background>
                     <Grid RowDefinitions="9*, 1*" ColumnDefinitions="2*, 8*">
                         <Canvas x:Name="ANALYSIS_CONTROL_CANVAS" Grid.Row="0" Grid.Column="0" Background="Black"> 
-                            <Button x:Name="ANALYSIS_OPEN_RECORDING" Content="OPEN RECORDING FILE" Width="150" Height="30" Canvas.Left="10" Canvas.Top="50" Click="_openRecording_Click"/>                           
-                            <Button x:Name="ANALYSIS_LOAD_RECORDING" Content="LOAD LAST RECORDING" Width="150" Height="30" Canvas.Left="10" Canvas.Top="100" Click="_loadRecording_Click"/>
-                            <Button x:Name="ANALYSIS_NEXT_FRAME" Content="NEXT FRAME" Width="150" Height="30" Canvas.Left="10" Canvas.Top="150" Click="_nextFrame_Click"/>
-                            <Button x:Name="ANALYSIS_PREVIOUS_FRAME" Content="PREVIOUS FRAME" Width="150" Height="30" Canvas.Left="10" Canvas.Top="200" Click="_previousFrame_Click"/>
+                            <Button x:Name="ANALYSIS_OPEN_RECORDING" Content="OPEN RECORDING FILE" Width="200" Height="30" Canvas.Left="10" Canvas.Top="50" Click="_openRecording_Click"/>                           
+                            <Button x:Name="ANALYSIS_LOAD_RECORDING" Content="LOAD LAST RECORDING" Width="200" Height="30" Canvas.Left="10" Canvas.Top="100" Click="_loadRecording_Click"/>
+                            <Button x:Name="ANALYSIS_NEXT_FRAME" Content="NEXT FRAME" Width="200" Height="30" Canvas.Left="10" Canvas.Top="150" Click="_nextFrame_Click"/>
+                            <Button x:Name="ANALYSIS_PREVIOUS_FRAME" Content="PREVIOUS FRAME" Width="200" Height="30" Canvas.Left="10" Canvas.Top="200" Click="_previousFrame_Click"/>
                         </Canvas>
                         <Canvas x:Name="ANALYSIS_CANVAS" Grid.Row="0" Grid.Column="1">                            
                             

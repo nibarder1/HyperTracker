@@ -122,9 +122,9 @@ namespace HyperTracker
         /// Invoke analysis frame change.
         /// </summary>
         /// <param name="frameIndex">Recording frame index.</param>
-        public static void InvokeFrameChange(int frameIndex)
+        public static void InvokeFrameChange(int frameIndex, bool forced = false)
         {
-            if(frameIndex == _currentFrame && frameIndex > 0)
+            if(frameIndex == _currentFrame && frameIndex > 0 && !forced)
             {
                 return;
             }

@@ -98,8 +98,9 @@ public partial class MainWindow : Window
 
     private void _loadRecording_Click(object sender, RoutedEventArgs args)
     {       
-        GlobalEvents.InvokeFrameChange(0);
         _buildAnalysis();
+        GlobalEvents.InvokeFrameChange(0, true);
+        
     }
 
     private void _nextFrame_Click(object sender, RoutedEventArgs args)
@@ -136,8 +137,9 @@ public partial class MainWindow : Window
         if(files.Count > 0)
         {
             Console.WriteLine($"Opening recording: {files[0].Path}");
-            LoadRecording.OpenRecording(files[0].Path.AbsolutePath);
             _buildAnalysis();
+            LoadRecording.OpenRecording(files[0].Path.AbsolutePath);
+            
         }
         
     }

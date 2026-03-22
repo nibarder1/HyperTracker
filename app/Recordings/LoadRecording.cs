@@ -56,7 +56,7 @@ namespace HyperTracker.Recordings
             Global.RECORDING_FRAMES = frames;
             Global.CURRENT_FRAME = 0;
             Console.WriteLine("Recording opened.");
-            GlobalEvents.InvokeFrameChange(0);
+            GlobalEvents.InvokeFrameChange(0, true);
         }
     }
 }
