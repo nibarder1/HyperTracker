@@ -40,6 +40,7 @@ public partial class CameraPopup : Window
     private void CleanupAnalysis(object? sender, WindowClosingEventArgs e)
     {
         GlobalEvents.OnFrameChange -= UpdateAnalysisPanel;
+        GlobalEvents.OnFrameChange -= _updateSlider;
     }
 
     public void ShowAnalysisPanel()
@@ -49,6 +50,7 @@ public partial class CameraPopup : Window
             return;
         }
         GlobalEvents.OnFrameChange += UpdateAnalysisPanel;
+        GlobalEvents.OnFrameChange += _updateSlider;
         this.Closing += CleanupAnalysis;
         for(int i = 0; i < Global.PROFILE_SETTINGS[Global.LOADED_PROFILE].Cameras.Count; i++)
         {
@@ -60,11 +62,24 @@ public partial class CameraPopup : Window
             }
         }
         this.Title = $"{this._cam.GetParams()!.GetParameter<string>("InputName")} Analysis";
-        TextBlock textBlock = TextBlockBuilder.CreateTextBlock(200, 50, 10, 10, "ANALYSIS_DISTANCE", "DISTANCE MM: ");
+        TextBlock textBlock = TextBlockBuilder.CreateTextBlock(200, 50, 10, 10, "ANALYSIS_DISTANCE", "DISTANCE CM: ");
         TextBlock helpBlock = TextBlockBuilder.CreateTextBlock(200, 50, 10, 100, "MEASURE_HELP", "CLICK ON IMAGE TO MEASURE");
+        Slider slider = SliderBuilder.CreateSlider(1200, 40, 10, 50, "ANALYSIS_SLIDER");  
+        slider.Maximum = Global.RECORDING_FRAMES.Count - 1;   
+        slider.Value = GlobalEvents.CurrentFrame;   
+        slider.ValueChanged += _frameSlider_Changed;
+
+        Button nextFrame = ButtonBuilder.CreateButton(150, 30, 500, 10, "ANALYSIS_NEXT_FRAME");
+        nextFrame.Content = "NEXT FRAME";
+        nextFrame.Click += _nextFrame_Click;
+
+        Button previousFrame = ButtonBuilder.CreateButton(150, 30, 300, 10, "ANALYSIS_PREVIOUS_FRAME");
+        previousFrame.Content = "PREVIOUS FRAME";
+        previousFrame.Click += _previousFrame_Click;
+
         Avalonia.Controls.Image img = ImageBuilder.CreateImage(1280, 720, 0, 100, "CAMERA_FEED");
         
-        SixLabors.ImageSharp.Image? frameImage = Global.RECORDING_FRAMES[Global.CURRENT_FRAME].GetImage(this._cam.GetParams()!.GetParameter<string>("InputName")!);
+        SixLabors.ImageSharp.Image? frameImage = Global.RECORDING_FRAMES[GlobalEvents.CurrentFrame].GetImage(this._cam.GetParams()!.GetParameter<string>("InputName")!);
         if(frameImage != null)
         {
             ImageBuilder.UpdateImage(img, frameImage);
@@ -74,8 +89,49 @@ public partial class CameraPopup : Window
 
         CAMERA_POPUP_CANVAS.Children.Add(textBlock);
         CAMERA_POPUP_CANVAS.Children.Add(img);
+        CAMERA_POPUP_CANVAS.Children.Add(slider);
+        CAMERA_POPUP_CANVAS.Children.Add(nextFrame);
+        CAMERA_POPUP_CANVAS.Children.Add(previousFrame);
         CAMERA_POPUP_CANVAS.Children.Add(helpBlock);
-        UpdateAnalysisPanel(Global.CURRENT_FRAME);
+        GlobalEvents.InvokeFrameChange(GlobalEvents.CurrentFrame);
+    }
+
+    private void _updateSlider(int index)
+    {
+        Dispatcher.UIThread.Invoke(() =>
+        {
+            var slider = UIControl.FindAvaloniaControl<Slider>(CAMERA_POPUP_CANVAS, "ANALYSIS_SLIDER");
+            if(slider != null)
+            {
+                slider.Maximum = Global.RECORDING_FRAMES.Count;
+                slider.Value = index;
+            }
+            
+        });
+    }
+
+    private void _frameSlider_Changed(object? sender, RoutedEventArgs args)
+    {       
+        if(Global.RECORDING_FRAMES.Count == 0)
+        {
+            return;
+        }
+        var slider = sender as Avalonia.Controls.Slider;
+        if(slider != null)
+        {
+            int index = (int)slider.Value;
+            GlobalEvents.InvokeFrameChange(index);
+        }
+    }
+
+    private void _nextFrame_Click(object? sender, RoutedEventArgs args)
+    {       
+        GlobalEvents.InvokeNextFrame();
+    }
+
+    private void _previousFrame_Click(object? sender, RoutedEventArgs args)
+    {       
+        GlobalEvents.InvokePreviousFrame();
     }
 
     
@@ -286,7 +342,7 @@ public partial class CameraPopup : Window
                     var distanceText = UIControl.FindAvaloniaControl<Avalonia.Controls.TextBlock>(CAMERA_POPUP_CANVAS, "ANALYSIS_DISTANCE");
                     if(distanceText != null)
                     {
-                        distanceText.Text = $"DISTANCE MM: {distance}";
+                        distanceText.Text = $"DISTANCE CM: {Math.Round(distance / 10, 1)}";
                     }
                 }
 
@@ -430,7 +486,7 @@ public partial class CameraPopup : Window
         if(sender != null)
         {
             this.measurePoint = GetPosition(sender, e);
-            UpdateAnalysisPanel(Global.CURRENT_FRAME);
+            UpdateAnalysisPanel(GlobalEvents.CurrentFrame);
         }
     }
 

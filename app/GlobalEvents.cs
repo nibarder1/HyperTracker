@@ -48,6 +48,8 @@ namespace HyperTracker
 
         public static event Action? OnCaptureFrame;
 
+        public static int CurrentFrame { get => _currentFrame;}
+
         /// <summary>
         /// Invoke full UI rebuild.
         /// </summary>
