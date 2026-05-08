@@ -101,18 +101,18 @@ namespace HyperTracker.UI
                                 }
                                 Cv2.Line(frameImage, new OpenCvSharp.Point(frameImage.Width, _mesh.MeshPoints[_mesh.MeshPoints.Count - 1][r].y * frameImage.Height / 100), _mesh.MeshPoints[_mesh.MeshPoints.Count - 1][r].ToCVPoint(frameImage.Width, frameImage.Height), color, 1, LineTypes.AntiAlias);
                             }
-
-                        }
-                        if(_measurePoint != null)
-                        {
-                            Cv2.Line(frameImage, new CV.Point(0, _measurePoint.y * frameImage.Height / 100).ToCVPoint(), new CV.Point(frameImage.Width, _measurePoint.y * frameImage.Height / 100).ToCVPoint(), Scalar.Green, 1, LineTypes.AntiAlias, 0);
-                            double measurement = Math.Round(_mesh.MeasureDistance(_measurePoint, Global.Recording.Properties[_cameraName]!.CalibrationCentimeters, Global.Recording.Properties[_cameraName].MeasurementOffsetCentimeters), 2);
-                            TextBlock? distanceLabel = UIControl.FindAvaloniaControl<TextBlock>(ANALYSIS_CANVAS, "ANALYSIS_DISTANCE");
-                            if(distanceLabel != null)
+                            if(_measurePoint != null)
                             {
-                                distanceLabel.Text = $"DISTANCE: {measurement} cm";
-                            }
-                        }                       
+                                Cv2.Line(frameImage, new CV.Point(0, _measurePoint.y * frameImage.Height / 100).ToCVPoint(), new CV.Point(frameImage.Width, _measurePoint.y * frameImage.Height / 100).ToCVPoint(), Scalar.Green, 1, LineTypes.AntiAlias, 0);
+                                double measurement = Math.Round(_mesh.MeasureDistance(_measurePoint, Global.Recording.Properties[_cameraName]!.CalibrationCentimeters, Global.Recording.Properties[_cameraName].MeasurementOffsetCentimeters), 2);
+                                TextBlock? distanceLabel = UIControl.FindAvaloniaControl<TextBlock>(ANALYSIS_CANVAS, "ANALYSIS_DISTANCE");
+                                if(distanceLabel != null)
+                                {
+                                    distanceLabel.Text = $"DISTANCE: {measurement} cm";
+                                }
+                            } 
+                        }
+                                              
                         ImageBuilder.UpdateImage(image, frameImage);
                     }                
                 }

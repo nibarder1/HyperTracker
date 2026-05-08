@@ -23,7 +23,7 @@ namespace HyperTracker.UI.UIBuilders
             Border border = CanvasBuilder.CreateCanvasWithBorder(width, height, rootX, rootY, $"{elementName}_BORDER");
             Canvas canvas = (Canvas)border.Child!;
             canvas.Name = elementName;
-            Button deleteCamera = ButtonBuilder.CreateButton(30, 30, (int)border.Width - 40, 10, $"{elementName}_REMOVE_CAMERA_BUTTON", "X", camera.RemoveCamera);
+            Button deleteCamera = ButtonBuilder.CreateButton(30, 30, (int)border.Width - 40, 10, $"{elementName}_REMOVE_CAMERA_BUTTON", "X", camera!.RemoveCamera);
             Image image = ImageBuilder.CreateImage(imageWidth, imageHeight, 10, 50, $"{elementName}_CAMERA_IMAGE");
             ComboBox cameras = ComboBoxBuilder.CreateComboBox(200, 30, 10, 10, $"{elementName}_CAMERA_SELECTOR");
             List<CameraProperties> availableCameras = Camera.GetAvailableCameras();

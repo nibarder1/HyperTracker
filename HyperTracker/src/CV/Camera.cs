@@ -55,14 +55,12 @@ namespace HyperTracker.CV
         /// <summary>
         /// Camera capture thread.
         /// </summary>
-        private Thread? _captureThread;
+        private Thread? _captureThread = null;
 
         private Canvas? _setupCanvas;
         private Canvas? _recordingCanvas;
         private Canvas? _analysisCanvas;
         private bool _runThread = true;
-        private bool _isInitialized = false;
-        private bool _toDispose = false;
 
         public Camera()
         {
@@ -121,7 +119,6 @@ namespace HyperTracker.CV
             }
             if (_camera != null)
             {
-                _isInitialized = false;
                 _camera.StopAsync().Wait(1000);
                 _camera.Dispose();
             }
@@ -144,7 +141,6 @@ namespace HyperTracker.CV
             }                                                 
 
             _lastFrame = new Mat(new Size(_cameraProperties.Resolution.Width, _cameraProperties.Resolution.Height), MatType.CV_8UC3);
-            _isInitialized = true;
             if(_camera != null)
             {
                 await _camera.StartAsync();

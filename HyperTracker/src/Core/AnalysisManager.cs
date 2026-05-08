@@ -32,6 +32,10 @@ namespace HyperTracker.Core
 
         private static void _updateImages()
         {
+            if(AnalysisCanvas == null)
+            {
+                return;
+            }
             if(Global.Recording.Frames.Count > 0 && Global.CurrentFrame < Global.Recording.Frames.Count && Global.CurrentFrame >= 0)
             {
                 Dispatcher.UIThread.Post(() =>
