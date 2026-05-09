@@ -217,21 +217,29 @@ namespace HyperTracker.CV
         {
             if(MeshPoints.Count == 1 && MeshPoints[0].Count > 1)
             {
-                if(testPoint.y < MeshPoints[0][0].y)
+                if(testPoint.y > MeshPoints[0][0].y)
                 {
                     return _measureSimple(testPoint, calibration, offset);
                 }
 
-                double trueOffset = offset + (MeshPoints[0].Count - 1) * calibration;
-                double pixelPerCM = _getPixelPerCM(MeshPoints[0][MeshPoints[0].Count - 2], MeshPoints[0][MeshPoints[0].Count - 1], calibration);
+                double trueOffset = offset;
+                double pixelPerCM = _getPixelPerCM(MeshPoints[0][0], MeshPoints[0][1], calibration);
                 double measurePixels = MeshPoints[0][MeshPoints[0].Count - 1].y - testPoint.y;
-                for(int i = 0; i < MeshPoints[0].Count - 1; i++)
+                for(int i = 0; i < MeshPoints[0].Count; i++)
                 {
-                    if(testPoint.y <= MeshPoints[0][i].y && testPoint.y > MeshPoints[0][i+1].y)
+                    if(testPoint.y < MeshPoints[0][i].y && i < MeshPoints[0].Count - 1 && testPoint.y >= MeshPoints[0][i+1].y)
                     {
                         trueOffset = offset + i * calibration;
                         pixelPerCM = _getPixelPerCM(MeshPoints[0][i], MeshPoints[0][i+1], calibration);
                         measurePixels = MeshPoints[0][i].y - testPoint.y;
+                        break;
+                    }
+                    if(testPoint.y <= MeshPoints[0][i].y && i == MeshPoints[0].Count - 1)
+                    {
+                        trueOffset = offset + i * calibration;
+                        pixelPerCM = _getPixelPerCM(MeshPoints[0][i-1], MeshPoints[0][i], calibration);
+                        measurePixels = MeshPoints[0][i].y - testPoint.y;
+                        break;
                     }
                 } 
                 return measurePixels / pixelPerCM + trueOffset;
