@@ -1,4 +1,7 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
+using Avalonia;
 using HyperTracker.Core;
 using HyperTracker.CV;
 using HyperTracker.UI.Themes;
@@ -13,5 +16,7 @@ namespace HyperTracker
         public static ThemeBase Theme = new ThemeBase();
         public static int CurrentTab = 0;
         public static int CurrentFrame = 0;
+
+        public static string ApplicationPath = AppDomain.CurrentDomain.BaseDirectory;
     }
 }

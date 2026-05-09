@@ -251,61 +251,87 @@ public partial class MainWindow : Window
 
     private void _cancelRecordingClick(object? sender, RoutedEventArgs e)
     {
-        GlobalEvents.CancelRecording();
-        TextBlock? recordingStatus = UIControl.FindAvaloniaControl<TextBlock>(MAIN_CANVAS, "RECORD_TAB_RECORDING_STATUS");
-        if (recordingStatus != null)
+        if(GlobalEvents.RecordingStatus == RecordingStatus.RECORDING)
         {
-            recordingStatus.Text = "IDLE";
-            recordingStatus.Foreground = Global.Theme.PrimaryForegroundBrush;
-        }
-        Border? recordingStatusBackground = UIControl.FindAvaloniaControl<Border>(MAIN_CANVAS, "RECORD_TAB_RECORDING_STATUS_BORDER");
-        if (recordingStatusBackground != null)
-        {
-            recordingStatusBackground.Background = Global.Theme.IdleBrush;
+            GlobalEvents.CancelRecording();
+            TextBlock? recordingStatus = UIControl.FindAvaloniaControl<TextBlock>(MAIN_CANVAS, "RECORD_TAB_RECORDING_STATUS");
+            if (recordingStatus != null)
+            {
+                recordingStatus.Text = "IDLE";
+                recordingStatus.Foreground = Global.Theme.PrimaryForegroundBrush;
+            }
+            Border? recordingStatusBackground = UIControl.FindAvaloniaControl<Border>(MAIN_CANVAS, "RECORD_TAB_RECORDING_STATUS_BORDER");
+            if (recordingStatusBackground != null)
+            {
+                recordingStatusBackground.Background = Global.Theme.IdleBrush;
 
+            }
         }
+        if(GlobalEvents.RecordingStatus == RecordingStatus.SAVING)
+        {
+            
+        }
+        
     }
 
     private void _stopRecordingClick(object? sender, RoutedEventArgs e)
     {
+        if(GlobalEvents.RecordingStatus == RecordingStatus.RECORDING)
+        {
+            TextBlock? recordingStatus = UIControl.FindAvaloniaControl<TextBlock>(MAIN_CANVAS, "RECORD_TAB_RECORDING_STATUS");
+            if (recordingStatus != null)
+            {
+                recordingStatus.Text = $"RECORDING LAST {Global.Config!.RecordingTime} SECONDS";
+                recordingStatus.Foreground = Global.Theme.PrimaryBackgroundBrush;
+            }
+            Border? recordingStatusBackground = UIControl.FindAvaloniaControl<Border>(MAIN_CANVAS, "RECORD_TAB_RECORDING_STATUS_BORDER");
+            if (recordingStatusBackground != null)
+            {
+                recordingStatusBackground.Background = Global.Theme.SavingBrush;
+            }
+            GlobalEvents.StopRecording(_finishedRecording);
+        }        
+    }
 
-        TextBlock? recordingStatus = UIControl.FindAvaloniaControl<TextBlock>(MAIN_CANVAS, "RECORD_TAB_RECORDING_STATUS");
-        if (recordingStatus != null)
+    private void _finishedRecording()
+    {
+        Console.WriteLine("Recording finished.");
+        GlobalEvents.CancelRecording();
+        Dispatcher.UIThread.Post(() =>
         {
-            recordingStatus.Text = $"RECORDING LAST {Global.Config!.RecordingTime} SECONDS";
-            recordingStatus.Foreground = Global.Theme.PrimaryBackgroundBrush;
-        }
-        Border? recordingStatusBackground = UIControl.FindAvaloniaControl<Border>(MAIN_CANVAS, "RECORD_TAB_RECORDING_STATUS_BORDER");
-        if (recordingStatusBackground != null)
-        {
-            recordingStatusBackground.Background = Global.Theme.SavingBrush;
-        }
-        GlobalEvents.StopRecording();
-        if (recordingStatus != null)
-        {
-            recordingStatus.Text = $"IDLE";
-            recordingStatus.Foreground = Global.Theme.PrimaryForegroundBrush;
-        }
-        if (recordingStatusBackground != null)
-        {
-            recordingStatusBackground.Background = Global.Theme.IdleBrush;
-        }
+            TextBlock? recordingStatus = UIControl.FindAvaloniaControl<TextBlock>(MAIN_CANVAS, "RECORD_TAB_RECORDING_STATUS");
+            if (recordingStatus != null)
+            {
+                recordingStatus.Text = "IDLE";
+                recordingStatus.Foreground = Global.Theme.PrimaryForegroundBrush;
+            }
+            Border? recordingStatusBackground = UIControl.FindAvaloniaControl<Border>(MAIN_CANVAS, "RECORD_TAB_RECORDING_STATUS_BORDER");
+            if (recordingStatusBackground != null)
+            {
+                recordingStatusBackground.Background = Global.Theme.IdleBrush;
+
+            }
+        });
     }
 
     private void _startRecordingClick(object? sender, RoutedEventArgs e)
     {
-        GlobalEvents.StartRecording();
-        TextBlock? recordingStatus = UIControl.FindAvaloniaControl<TextBlock>(MAIN_CANVAS, "RECORD_TAB_RECORDING_STATUS");
-        if (recordingStatus != null)
+        if(GlobalEvents.RecordingStatus == RecordingStatus.IDLE)
         {
-            recordingStatus.Text = "ARMED";
-            recordingStatus.Foreground = Global.Theme.PrimaryForegroundBrush;
+            GlobalEvents.StartRecording();
+            TextBlock? recordingStatus = UIControl.FindAvaloniaControl<TextBlock>(MAIN_CANVAS, "RECORD_TAB_RECORDING_STATUS");
+            if (recordingStatus != null)
+            {
+                recordingStatus.Text = "ARMED";
+                recordingStatus.Foreground = Global.Theme.PrimaryForegroundBrush;
+            }
+            Border? recordingStatusBackground = UIControl.FindAvaloniaControl<Border>(MAIN_CANVAS, "RECORD_TAB_RECORDING_STATUS_BORDER");
+            if (recordingStatusBackground != null)
+            {
+                recordingStatusBackground.Background = Global.Theme.RecordingBrush;
+            }
         }
-        Border? recordingStatusBackground = UIControl.FindAvaloniaControl<Border>(MAIN_CANVAS, "RECORD_TAB_RECORDING_STATUS_BORDER");
-        if (recordingStatusBackground != null)
-        {
-            recordingStatusBackground.Background = Global.Theme.RecordingBrush;
-        }
+        
     }
 
     private void _openProgramClick(object? sender, RoutedEventArgs e)

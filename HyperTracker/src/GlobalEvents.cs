@@ -1,9 +1,11 @@
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Timers;
 using Avalonia.Threading;
 using HyperTracker.Core;
 using HyperTracker.CV;
+using HyperTracker.IO;
 
 namespace HyperTracker
 {
@@ -24,6 +26,7 @@ namespace HyperTracker
         public static event Action? OnExit;
 
         public static int LiveUpdateSubscriptions => OnUpdateLive?.GetInvocationList().Length ?? 0;
+        public static RecordingStatus RecordingStatus => _recordingStatus;
 
         public static void Ready()
         {
@@ -85,18 +88,18 @@ namespace HyperTracker
             }
         }
 
-        public static void StopRecording()
+        public static void StopRecording(Action cb)
         {
             if(_recordingStatus == RecordingStatus.RECORDING)
             {
                 _recordingStatus = RecordingStatus.SAVING;
                 OnStopRecording?.Invoke();
-                _recordingStatus = RecordingStatus.IDLE;
+                Task.Run(() => {RecordingIO.SaveRecording($"{Global.ApplicationPath}/recordings", cb);});                
             }
         }
         public static void CancelRecording()
         {
-            if(_recordingStatus == RecordingStatus.RECORDING)
+            if(_recordingStatus == RecordingStatus.RECORDING || _recordingStatus == RecordingStatus.SAVING)
             {
                 _recordingStatus = RecordingStatus.IDLE;
                 OnCancelRecording?.Invoke();
