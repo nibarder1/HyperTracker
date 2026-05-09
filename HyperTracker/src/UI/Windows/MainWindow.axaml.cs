@@ -221,7 +221,7 @@ public partial class MainWindow : Window
         Button previousFrame = ButtonBuilder.CreateButton(30, 30, 10, 10, $"{tab.Name}_PREVIOUS_FRAME", "<", AnalysisManager.PreviousFrame);
         Slider frameSlider = SliderBuilder.CreateSlider((int)controlPanel.Width * 2 / 3, 40, 20 + (int)previousFrame.Width, 0, $"{tab.Name}_FRAME_SLIDER");
         frameSlider.ValueChanged += AnalysisManager.SliderChanged;
-        AnalysisManager.AnalysisSlider = frameSlider;
+        AnalysisManager.AnalysisSliders.Add(frameSlider);
         Button nextFrame = ButtonBuilder.CreateButton(30, 30, 30 + (int)(previousFrame.Width + frameSlider.Width), 10, $"{tab.Name}_PREVIOUS_FRAME", ">", AnalysisManager.NextFrame);
 
 

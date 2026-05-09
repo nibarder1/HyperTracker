@@ -14,18 +14,18 @@ namespace HyperTracker.Core
     public class AnalysisManager
     {
         public static Canvas? AnalysisCanvas;
-        public static Slider? AnalysisSlider;
+        public static List<Slider> AnalysisSliders = new List<Slider>();
         internal static void LoadLast(object? sender, RoutedEventArgs e)
         {
             if(AnalysisCanvas != null)
             {
                 Global.CurrentFrame = 0;
                 _buildCanvas();
-                if(AnalysisSlider != null)
+                foreach(Slider slider in AnalysisSliders)
                 {
-                    AnalysisSlider.Minimum = 0;
-                    AnalysisSlider.Maximum = Global.Recording.Frames.Count;
-                    AnalysisSlider.Value = Global.CurrentFrame;
+                    slider.Minimum = 0;
+                    slider.Maximum = Global.Recording.Frames.Count;
+                    slider.Value = Global.CurrentFrame;
                 }
             }
         }
@@ -64,11 +64,13 @@ namespace HyperTracker.Core
 
         private static void _buildCanvas()
         {
+            GlobalEvents.OnFrameChange -= _updateImages;
             if(Global.Recording.Frames.Count > 0 && Global.CurrentFrame < Global.Recording.Frames.Count && Global.CurrentFrame >= 0)
             {
                 Dispatcher.UIThread.Post(() =>
                 {
                     AnalysisCanvas!.Children.Clear();
+                    AnalysisSliders.Clear();
                     List<string> keys = Global.Recording.Frames[0].FrameImages.Keys.ToList();
                     for(int i = 0; i < keys.Count; i++)
                     {
@@ -89,7 +91,8 @@ namespace HyperTracker.Core
                     }
                 });
             }
-            _updateImages();
+            GlobalEvents.OnFrameChange += _updateImages;
+            GlobalEvents.ChangeFrame();
             
         }
 
@@ -107,11 +110,11 @@ namespace HyperTracker.Core
             if(Global.Recording.Frames.Count > 0 && Global.CurrentFrame > 0)
             {
                 Global.CurrentFrame--;
-                if(AnalysisSlider != null)
+                foreach(Slider slider in AnalysisSliders)
                 {
-                    AnalysisSlider.Value = Global.CurrentFrame;
+                    slider.Value = Global.CurrentFrame;
                 }
-                _updateImages();
+                GlobalEvents.ChangeFrame();
             }
         }
         internal static void NextFrame(object? sender, RoutedEventArgs e)
@@ -119,21 +122,25 @@ namespace HyperTracker.Core
             if(Global.Recording.Frames.Count > 0 && Global.CurrentFrame < Global.Recording.Frames.Count - 1)
             {
                 Global.CurrentFrame++;
-                if(AnalysisSlider != null)
+                foreach(Slider slider in AnalysisSliders)
                 {
-                    AnalysisSlider.Value = Global.CurrentFrame;
+                    slider.Value = Global.CurrentFrame;
                 }
-                _updateImages();
+                GlobalEvents.ChangeFrame();
             }
         }
 
         internal static void SliderChanged(object? sender, RangeBaseValueChangedEventArgs e)
         {
-            Slider? slider = (Slider?)sender;
-            if(slider != null && Global.CurrentFrame != (int)slider.Value)
+            Slider? sliderSender = (Slider?)sender;
+            if(sliderSender != null && Global.CurrentFrame != (int)sliderSender.Value)
             {
-                Global.CurrentFrame = (int)slider.Value;
-                _updateImages();
+                Global.CurrentFrame = (int)sliderSender.Value;
+                foreach(Slider slider in AnalysisSliders)
+                {
+                    slider.Value = Global.CurrentFrame;
+                }
+                GlobalEvents.ChangeFrame();
             }
         }
 

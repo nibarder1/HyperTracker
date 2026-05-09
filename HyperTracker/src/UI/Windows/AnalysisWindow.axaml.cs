@@ -2,7 +2,9 @@ using System;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Threading;
+using HyperTracker.Core;
 using HyperTracker.CV;
 using HyperTracker.UI.UIBuilders;
 using OpenCvSharp;
@@ -19,10 +21,16 @@ namespace HyperTracker.UI
             this.Title = "Analysis";
             this.Topmost = true;
             this.SizeChanged += _resize;
+            this.Closing += _exit;
             this.MinHeight = 720;
             this.MinWidth = 1280;
 
             InitializeComponent();
+        }
+
+        private void _exit(object? sender, WindowClosingEventArgs e)
+        {
+            GlobalEvents.OnFrameChange -= _updateImage;
         }
 
         private void _resize(object? sender, SizeChangedEventArgs e)
@@ -32,10 +40,22 @@ namespace HyperTracker.UI
 
         private void _init()
         {
+            GlobalEvents.OnFrameChange += _updateImage;
             Border controlPanel = CanvasBuilder.CreateCanvasWithBorder((int)this.ClientSize.Width, 50, 0, 0, $"ANALYSIS_CONTROL_PANEL");
             Border distanceLabel = TextBlockBuilder.CreateTextBlockWithBox(250, 30, 10, 10, $"ANALYSIS_DISTANCE", "DISTANCE:");
+            Button previousButton = ButtonBuilder.CreateButton(30, 30, 280, 10, $"ANALYSIS_PREVIOUS_FRAME_BUTTON", "<", AnalysisManager.PreviousFrame);
+            Slider frameSlider = SliderBuilder.CreateSlider((int)controlPanel.Width * 3 / 5, 40, 330, 0, $"ANALYSIS_FRAME_SLIDER");            
+            frameSlider.Minimum = 0;
+            frameSlider.Maximum = Global.Recording.Frames.Count;
+            frameSlider.Value = Global.CurrentFrame;
+            frameSlider.ValueChanged += AnalysisManager.SliderChanged;
+            AnalysisManager.AnalysisSliders.Add(frameSlider);
+            Button nextButton = ButtonBuilder.CreateButton(30, 30, (int)frameSlider.Width + 350, 10, "ANALYSIS_NEXT_FRAME_BUTTON",  ">", AnalysisManager.NextFrame);
 
             CanvasBuilder.AddElement(controlPanel, distanceLabel);
+            CanvasBuilder.AddElement(controlPanel, previousButton);
+            CanvasBuilder.AddElement(controlPanel, frameSlider);
+            CanvasBuilder.AddElement(controlPanel, nextButton);
 
             Border optionPanel = CanvasBuilder.CreateCanvasWithBorder(300, (int)this.ClientSize.Height - 70, 10, 60, $"ANALYSIS_OPTION_PANEL");
 

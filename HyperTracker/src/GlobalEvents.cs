@@ -19,6 +19,7 @@ namespace HyperTracker
         public static event Action? OnRebuildUI;
         public static event Action? OnUpdateLive;
         public static event Action? OnReady;
+        public static event Action? OnFrameChange;
 
         public static event Action? OnExit;
 
@@ -62,6 +63,11 @@ namespace HyperTracker
             {
                 OnCaptureFrame?.Invoke();
             }            
+        }
+
+        public static void ChangeFrame()
+        {
+            OnFrameChange?.Invoke();
         }
 
         public static void StartRecording()
