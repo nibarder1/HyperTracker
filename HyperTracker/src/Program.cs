@@ -7,6 +7,7 @@ using System.Threading;
 using HyperTracker.UI;
 using System.Threading.Tasks;
 using Avalonia.Threading;
+using System.IO;
 
 namespace HyperTracker;
 
@@ -17,6 +18,9 @@ class Program
     {        
         try
         {
+            //build file system
+            
+
             GlobalEvents.OnCaptureFrame += Frame.CaptureFrame;
             GlobalEvents.OnReady += _init;
 

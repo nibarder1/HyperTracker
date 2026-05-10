@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
@@ -44,6 +45,15 @@ namespace HyperTracker
             _captureTimer.Elapsed += _captureEvent;
             _captureTimer.AutoReset = true;
             _captureTimer.Start();
+
+            if(!Directory.Exists($"{Global.ApplicationPath}/recordings"))
+            {
+                Directory.CreateDirectory($"{Global.ApplicationPath}/recordings");
+            }
+            if(!Directory.Exists($"{Global.ApplicationPath}/programs"))
+            {
+                Directory.CreateDirectory($"{Global.ApplicationPath}/programs");
+            }
         }
 
         public static void UpdateRecordingCycle(int ms)

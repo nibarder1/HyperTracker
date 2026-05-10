@@ -13,11 +13,13 @@ namespace HyperTracker.IO
     {
         public static void SaveRecording(string folderPath, Action cb)
         {
-            if(!Directory.Exists(folderPath))
+            if (!Directory.Exists(folderPath))
             {
-                try{
+                try
+                {
                     Directory.CreateDirectory(folderPath);
-                }catch
+                }
+                catch
                 {
                     return;
                 }
@@ -27,34 +29,29 @@ namespace HyperTracker.IO
             {
                 Directory.CreateDirectory(recordingPath);
                 Directory.CreateDirectory($"{recordingPath}/frames");
-            }catch
+            }
+            catch
             {
                 return;
             }
             string filePath = $"{recordingPath}/recording.json";
             try
             {
-                for(int i = 0; i < Global.Recording.Frames.Count; i++)
+                for (int i = 0; i < Global.Recording.Frames.Count; i++)
                 {
-                    string framePath = $"{recordingPath}/frames/frame{i}.frame";
+                    string framePath = $"{recordingPath}/frames/frame{i}.json";
                     Frame frame = Global.Recording.Frames[i];
-                    SerializableFrame sFrame = new SerializableFrame {
-                        Timestamp = frame.Timestamp,
-                        FrameImages = frame.FrameImages.ToDictionary(
-                            kvp => kvp.Key,
-                            kvp => kvp.Value != null ? MatToBytes(kvp.Value) : null
-                        ),
-                        NextFramePath = $"{recordingPath}/frames/frame{i+1}.frame"
-                    };
+                    SerializableFrame sFrame = new SerializableFrame(frame.Timestamp,
+                                                                    $"{recordingPath}/frames/frame{i + 1}.json",
+                                                                    frame.FrameImages.ToDictionary(
+                                                                        kvp => kvp.Key,
+                                                                        kvp => kvp.Value != null ? MatToBytes(kvp.Value) : null
+                                                                    ));
                     string json = JsonSerializer.Serialize(sFrame);
                     File.WriteAllText(framePath, json);
                 }
                 // Create a serializable version of the recording
-                var serializableRecording = new SerializableRecording
-                {
-                    Properties = Global.Recording.Properties,
-                    FirstFramePath = $"{recordingPath}/frames/frame0.frame"
-                };
+                var serializableRecording = new SerializableRecording(Global.Recording.Properties, $"{recordingPath}/frames/frame0.json");
 
                 string jsonR = JsonSerializer.Serialize(serializableRecording);
                 File.WriteAllText(filePath, jsonR);
@@ -68,29 +65,44 @@ namespace HyperTracker.IO
 
         public static void LoadRecording(string filePath)
         {
-            // try
-            // {
-            //     string json = File.ReadAllText(filePath);
-            //     var serializableRecording = JsonSerializer.Deserialize<SerializableRecording>(json);
-                
-            //     if (serializableRecording != null)
-            //     {
-            //         Global.Recording.Properties = serializableRecording.Properties;
-            //         Global.Recording.Frames = serializableRecording.Frames.Select(sf => new Frame(sf.Timestamp)
-            //         {
-            //             FrameImages = sf.FrameImages.ToDictionary(
-            //                 kvp => kvp.Key,
-            //                 kvp => kvp.Value != null ? BytesToMat(kvp.Value) : null
-            //             )
-            //         }).ToList();
-                    
-            //         Console.WriteLine("Recording loaded successfully.");
-            //     }
-            // }
-            // catch (Exception ex)
-            // {
-            //     Console.WriteLine($"Error loading recording: {ex.Message}");
-            // }
+            try
+            {
+                string json = File.ReadAllText(filePath);
+                var serializableRecording = JsonSerializer.Deserialize<SerializableRecording>(json);
+
+                if (serializableRecording != null)
+                {
+                    Global.Recording.Properties = serializableRecording.Properties;
+                    Global.Recording.Frames.Clear();
+                    string frameFile = serializableRecording.FirstFramePath;
+                    while (File.Exists(frameFile))
+                    {
+                        var frameJson = File.ReadAllText(frameFile);
+                        var frameData = JsonSerializer.Deserialize<SerializableFrame>(frameJson);
+                        if (frameData != null)
+                        {
+                            Frame frame = new Frame(frameData.Timestamp);
+                            frame.FrameImages = frameData.FrameImages.ToDictionary(kvp => kvp.Key, kvp => kvp.Value != null ? BytesToMat(kvp.Value) : null);
+                            Global.Recording.Frames.Add(frame);
+                            frameFile = frameData.NextFramePath;
+                        }
+                        else
+                        {
+                            throw new Exception("Unable to load frames.");
+                        }
+                    }
+
+                    Console.WriteLine("Recording loaded successfully.");
+                    Global.CurrentFrame = 0;
+                    Console.WriteLine(Global.Recording.Frames.Count);
+                    AnalysisManager.Load();
+                    GlobalEvents.ChangeFrame();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading recording: {ex.Message}");
+            }
         }
 
         public static List<string> GetLastRecordings(string path, int amount)
@@ -102,7 +114,7 @@ namespace HyperTracker.IO
 
         private static byte[]? MatToBytes(Mat? mat)
         {
-            if(mat == null) return null;
+            if (mat == null) return null;
             return mat.ImEncode(".png");
         }
 
@@ -114,15 +126,30 @@ namespace HyperTracker.IO
 
         private class SerializableRecording
         {
-            public Dictionary<string, CameraProperties> Properties { get; set; } = new();
-            public string FirstFramePath {get; set;} = "";
+            public SerializableRecording(Dictionary<string, CameraProperties> properties, string firstFramePath)
+            {
+                Properties = properties;
+                FirstFramePath = firstFramePath;
+            }
+
+            public Dictionary<string, CameraProperties> Properties { get; set; }
+            public string FirstFramePath { get; set; }
         }
 
         private class SerializableFrame
         {
+            public SerializableFrame(DateTime timestamp, string nextFramePath, Dictionary<string, byte[]?> frameImages)
+            {
+                Timestamp = timestamp;
+                NextFramePath = nextFramePath;
+                FrameImages = frameImages;
+            }
+
             public DateTime Timestamp { get; set; }
-            public Dictionary<string, byte[]?> FrameImages { get; set; } = new();
-            public string NextFramePath {get; set;} = "";
+            public string NextFramePath { get; set; }
+            public Dictionary<string, byte[]?> FrameImages { get; set; }
+            
+            
         }
     }
 }

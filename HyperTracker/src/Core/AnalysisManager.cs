@@ -17,17 +17,26 @@ namespace HyperTracker.Core
         public static List<Slider> AnalysisSliders = new List<Slider>();
         internal static void LoadLast(object? sender, RoutedEventArgs e)
         {
-            if(AnalysisCanvas != null)
+            Load();
+        }
+
+        internal static void Load()
+        {
+            Dispatcher.UIThread.Post(() =>
             {
-                Global.CurrentFrame = 0;
-                _buildCanvas();
-                foreach(Slider slider in AnalysisSliders)
+                if(AnalysisCanvas != null)
                 {
-                    slider.Minimum = 0;
-                    slider.Maximum = Global.Recording.Frames.Count;
-                    slider.Value = Global.CurrentFrame;
+                    Global.CurrentFrame = 0;
+                    _buildCanvas();
+                    foreach(Slider slider in AnalysisSliders)
+                    {
+                        slider.Minimum = 0;
+                        slider.Maximum = Global.Recording.Frames.Count;
+                        slider.Value = Global.CurrentFrame;
+                    }
                 }
-            }
+            });
+            
         }
 
         private static void _updateImages()
@@ -70,7 +79,6 @@ namespace HyperTracker.Core
                 Dispatcher.UIThread.Post(() =>
                 {
                     AnalysisCanvas!.Children.Clear();
-                    AnalysisSliders.Clear();
                     List<string> keys = Global.Recording.Frames[0].FrameImages.Keys.ToList();
                     for(int i = 0; i < keys.Count; i++)
                     {

@@ -9,6 +9,7 @@ using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using HyperTracker.Core;
 using HyperTracker.CV;
+using HyperTracker.IO;
 using HyperTracker.UI.UIBuilders;
 
 namespace HyperTracker.UI;
@@ -213,8 +214,10 @@ public partial class MainWindow : Window
 
         //Add buttons for last 10 recordings
         Button loadLastButton = ButtonBuilder.CreateButton((int)leftPanel.Width - 20, 30, 10, 10, $"{tab.Name}_LOAD_LAST_BUTTON", "LOAD LAST RECORDING", AnalysisManager.LoadLast);
+        Button openRecordingButton = ButtonBuilder.CreateButton((int)leftPanel.Width - 20, 30, 10, 50, $"{tab.Name}_OPEN_RECORDING_BUTTON", "OPEN RECORDING", _openRecordingClick);
 
         CanvasBuilder.AddElement(leftPanel, loadLastButton);
+        CanvasBuilder.AddElement(leftPanel, openRecordingButton);
         tab.Children.Add(leftPanel);
 
         Border controlPanel = CanvasBuilder.CreateCanvasWithBorder((int)(tab.Width - 20 - leftPanel.Width), 50, (int)(20 + leftPanel.Width), 10, $"{tab.Name}_CONTROL_PANEL");
@@ -334,6 +337,11 @@ public partial class MainWindow : Window
         
     }
 
+    private void _openRecordingClick(object? sender, RoutedEventArgs e)
+    {
+        Task.Run(_openRecording);
+    }
+
     private void _openProgramClick(object? sender, RoutedEventArgs e)
     {
         Task.Run(_openProgram);
@@ -344,6 +352,32 @@ public partial class MainWindow : Window
         Task.Run(_saveProgram);
     }
 
+    private async Task _openRecording()
+    {
+        var topLevel = TopLevel.GetTopLevel(this);
+        var jsonFileType = new FilePickerFileType("Recording")
+        {
+            Patterns = new[] { "*.json" }
+        };
+
+        var startLocation = await topLevel.StorageProvider.TryGetFolderFromPathAsync( $"{Global.ApplicationPath}/recordings");
+        var files = await topLevel!.StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions
+        {
+            Title = "Open Recording",
+            AllowMultiple = false,
+            FileTypeFilter = new List<FilePickerFileType>
+            {
+                jsonFileType
+            },
+            SuggestedStartLocation = startLocation
+        });
+        if (files.Count > 0)
+        {
+            RecordingIO.LoadRecording(files[0].Path.AbsolutePath);
+            
+        }
+    }
+
     private async Task _openProgram()
     {
         var topLevel = TopLevel.GetTopLevel(this);
@@ -351,6 +385,7 @@ public partial class MainWindow : Window
         {
             Patterns = new[] { "*.hyprog" }
         };
+        var startLocation = await topLevel.StorageProvider.TryGetFolderFromPathAsync( $"{Global.ApplicationPath}/programs");
         var files = await topLevel!.StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions
         {
             Title = "Open Program",
@@ -358,7 +393,8 @@ public partial class MainWindow : Window
             FileTypeFilter = new List<FilePickerFileType>
             {
                 jsonFileType
-            }
+            },
+            SuggestedStartLocation = startLocation
         });
         if (files.Count > 0)
         {
@@ -401,13 +437,15 @@ public partial class MainWindow : Window
         {
             Patterns = new[] { "*.hyprog" }
         };
+        var startLocation = await topLevel.StorageProvider.TryGetFolderFromPathAsync( $"{Global.ApplicationPath}/programs");
         var files = await topLevel!.StorageProvider.SaveFilePickerAsync(new Avalonia.Platform.Storage.FilePickerSaveOptions
         {
             Title = "Save Program",
             FileTypeChoices = new List<FilePickerFileType>
             {
                 jsonFileType
-            }
+            },
+            SuggestedStartLocation = startLocation
         });
         if (files != null && files.Path.AbsolutePath.Length > 0)
         {
