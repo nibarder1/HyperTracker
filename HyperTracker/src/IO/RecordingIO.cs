@@ -105,9 +105,16 @@ namespace HyperTracker.IO
             }
         }
 
-        public static List<string> GetLastRecordings(string path, int amount)
+        public static List<string> GetLastRecordings(int amount)
         {
             List<string> recordings = new List<string>();
+            DirectoryInfo dir = new DirectoryInfo($"{Global.ApplicationPath}/recordings");
+            var sortedDir = dir.GetDirectories().OrderByDescending(d => d.CreationTime).ToList();
+            foreach(DirectoryInfo dirInfo in sortedDir)
+            {
+                if(recordings.Count > amount) break;
+                recordings.Add(dirInfo.FullName);
+            }
 
             return recordings;
         }

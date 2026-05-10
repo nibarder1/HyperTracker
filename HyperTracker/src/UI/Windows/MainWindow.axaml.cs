@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,6 +17,8 @@ namespace HyperTracker.UI;
 
 public partial class MainWindow : Window
 {
+
+    private Border? _analysisRecordings;
     public MainWindow()
     {
         this.MinHeight = 720;
@@ -210,15 +213,21 @@ public partial class MainWindow : Window
         Canvas tab = CanvasBuilder.CreateCanvas((int)control.Width, (int)(control.Height - Global.Theme.TabControlHeaderHeight), 0, 0, "ANALYSIS_TAB");
         tab.Background = Global.Theme.TabControlSelectedBrush;
 
-        Border leftPanel = CanvasBuilder.CreateCanvasWithBorder(300, (int)(tab.Height - Global.Theme.TabControlHeaderHeight), 0, 10, $"{tab.Name}_LEFT_PANEL");
+        Border leftPanel = CanvasBuilder.CreateCanvasWithBorder(300, 90, 0, 10, $"{tab.Name}_LEFT_PANEL");
 
         //Add buttons for last 10 recordings
-        Button loadLastButton = ButtonBuilder.CreateButton((int)leftPanel.Width - 20, 30, 10, 10, $"{tab.Name}_LOAD_LAST_BUTTON", "LOAD LAST RECORDING", AnalysisManager.LoadLast);
+        Button loadLastButton = ButtonBuilder.CreateButton((int)leftPanel.Width - 20, 30, 10, 10, $"{tab.Name}_LOAD_LAST_BUTTON", "LOAD FROM MEMORY", AnalysisManager.LoadLast);
         Button openRecordingButton = ButtonBuilder.CreateButton((int)leftPanel.Width - 20, 30, 10, 50, $"{tab.Name}_OPEN_RECORDING_BUTTON", "OPEN RECORDING", _openRecordingClick);
+
+        Border recordingSelectPanel = PanelBuilder.CreateStackPanelWithBorder(300, (int)(tab.Height - Global.Theme.TabControlHeaderHeight - leftPanel.Height - 10), 0, 20 + (int)leftPanel.Height, $"{tab.Name}_RECORDING_SELECT_PANEL");
+        _analysisRecordings = recordingSelectPanel;
+        _buildRecordingSelection();
+
 
         CanvasBuilder.AddElement(leftPanel, loadLastButton);
         CanvasBuilder.AddElement(leftPanel, openRecordingButton);
         tab.Children.Add(leftPanel);
+        tab.Children.Add(recordingSelectPanel);
 
         Border controlPanel = CanvasBuilder.CreateCanvasWithBorder((int)(tab.Width - 20 - leftPanel.Width), 50, (int)(20 + leftPanel.Width), 10, $"{tab.Name}_CONTROL_PANEL");
         Button previousFrame = ButtonBuilder.CreateButton(30, 30, 10, 10, $"{tab.Name}_PREVIOUS_FRAME", "<", AnalysisManager.PreviousFrame);
@@ -251,6 +260,26 @@ public partial class MainWindow : Window
     #endregion
 
     #region EVENTS
+
+    private void _buildRecordingSelection()
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            if(_analysisRecordings != null)
+            {
+                StackPanel? panel = (StackPanel?)_analysisRecordings.Child;
+                if(panel != null) panel.Children.Clear();
+                foreach(string s in RecordingIO.GetLastRecordings(10))
+                {
+                    Button recordingButton = ButtonBuilder.CreateButton((int)_analysisRecordings.Width - 20, 30, 0, 0, $"{Path.GetFileName(s)}", Path.GetFileName(s), (object? sender, RoutedEventArgs e) => {RecordingIO.LoadRecording($"{s}/recording.json");});
+                    recordingButton.Margin = new Avalonia.Thickness(10, 5);
+                    PanelBuilder.AddElement(_analysisRecordings, recordingButton);
+                }
+            } 
+        });
+               
+        
+    }
 
     private void _cancelRecordingClick(object? sender, RoutedEventArgs e)
     {
@@ -314,6 +343,7 @@ public partial class MainWindow : Window
                 recordingStatusBackground.Background = Global.Theme.IdleBrush;
 
             }
+            _buildRecordingSelection();
         });
     }
 
