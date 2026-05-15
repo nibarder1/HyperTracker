@@ -25,6 +25,7 @@ namespace HyperTracker.UI
             this.Title = "Camera Calibration";
             this.Topmost = true;
             this.SizeChanged += _resize;
+            this.Closing += _onClose;
             this.MinHeight = 720;
             this.MinWidth = 1280;
             if (_camera != null && _camera.Properties != null)
@@ -37,6 +38,12 @@ namespace HyperTracker.UI
             }
             InitializeComponent();
             _init();
+            GlobalEvents.OnUpdateLive += _updateImage;
+        }
+
+        private void _onClose(object? sender, WindowClosingEventArgs e)
+        {
+            GlobalEvents.OnUpdateLive -= _updateImage;
         }
 
         private void _resize(object? sender, SizeChangedEventArgs e)
